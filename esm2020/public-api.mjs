@@ -1,0 +1,4 @@
+export * from './api/ondewo/sip/sip.pbsc';
+export * from './api/ondewo/sip/sip.pbconf';
+export * from './api/ondewo/sip/sip.pb';
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicHVibGljLWFwaS5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uL3B1YmxpYy1hcGkudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsY0FBYywyQkFBMkIsQ0FBQztBQUMxQyxjQUFjLDZCQUE2QixDQUFDO0FBQzVDLGNBQWMseUJBQXlCLENBQUMiLCJzb3VyY2VzQ29udGVudCI6WyJleHBvcnQgKiBmcm9tICcuL2FwaS9vbmRld28vc2lwL3NpcC5wYnNjJztcbmV4cG9ydCAqIGZyb20gJy4vYXBpL29uZGV3by9zaXAvc2lwLnBiY29uZic7XG5leHBvcnQgKiBmcm9tICcuL2FwaS9vbmRld28vc2lwL3NpcC5wYic7XG4iXX0=
