@@ -1,0 +1,6 @@
+.idea
+npm
+ondewo-sip-api/*
+.idea/
+.vscode/
+node_modules
