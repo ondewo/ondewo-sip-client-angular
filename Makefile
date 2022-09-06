@@ -66,6 +66,31 @@ help: ## Print usage info about help targets
 makefile_chapters: ## Shows all sections of Makefile
 	@echo `cat Makefile| grep "########################################################" -A 1 | grep -v "########################################################"`
 
+check_build: #Checks if all built proto-code is there
+	@rm -rf build_check.txt
+	@rm -rf build_check_temp.txt
+	@for proto in `find src/ondewo-sip-api/ondewo -iname "*.proto*"`; \
+	do \
+		echo $${proto} | cut -d "/" -f 5 | cut -d "." -f 1 >> build_check_temp.txt; \
+		cat build_check_temp.txt >> build_check.txt; \
+	done
+	@echo "`sort build_check.txt | uniq`" > build_check.txt
+	@sed -i "s/\_/\-/g" build_check.txt
+
+	@for file in `cat build_check.txt`;\
+	do \
+		find api -iname "*pb*" | grep -q $${file}; \
+		if test $$? != 0; then  echo "No Proto-Code for $${file} in api" & exit 1;fi; \
+		find esm2020 -iname "*pb*" | grep -q $${file}; \
+		if test $$? != 0; then  echo "No Proto-Code for $${file} in esm2020" & exit 1;fi; \
+		find fesm2015 -iname "*ondewo-sip-client-angular*" | wc -l | grep -q "2"; \
+		if test $$? != 0; then  echo "No Proto-Code for $${file} in fesm2015" & exit 1;fi; \
+		find fesm2020 -iname "*ondewo-sip-client-angular*" | wc -l | grep -q "2"; \
+		if test $$? != 0; then  echo "No Proto-Code for $${file} in fesm2020" & exit 1;fi; \
+	done
+	@rm -rf build_check.txt
+	@rm -rf build_check_temp.txt
+
 ########################################################
 #       Repo Specific Make Targets
 ########################################################
