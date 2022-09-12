@@ -21,7 +21,9 @@ npm i --save @ondewo/sip-client-angular
 ### Using GitHub
 
 **Run:**
+
 ```bash
 git+https://github.com/ondewo/ondewo-sip-client-angular.git
 ```
+
 inside of your project to install the npm package of this github repository in you angular project.
