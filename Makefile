@@ -47,7 +47,7 @@ install_packages: ## Install npm packages
 install_precommit_hooks: ## Install precommit hooks
 	npx husky install
 
-run_precommit_hooks:
+run_precommit_hooks: ## Runs all Precommit-Hooks
 	.husky/pre-commit
 
 prettier: ## Checks formatting with Prettier - Use PRETTIER_WRITE=-w to also automatically apply corrections where needed
@@ -120,12 +120,12 @@ release: ## Create Github and NPM Release
 	git add Makefile
 	git add ondewo-proto-compiler
 	git status
-# git commit -m "Preparing for Release ${ONDEWO_SIP_VERSION}"
-# git push
-# make publish_npm_via_docker
-# make create_release_branch
-# make create_release_tag
-# make release_to_github_via_docker_image
+	git commit -m "Preparing for Release ${ONDEWO_SIP_VERSION}"
+	git push
+	make publish_npm_via_docker
+	make create_release_branch
+	make create_release_tag
+	make release_to_github_via_docker_image
 	@echo "Finished Release"
 
 gh_release: build_utils_docker_image release_to_github_via_docker_image ## Builds Utils Image and Releases to Github
@@ -195,8 +195,8 @@ run_release_with_devops: ## Runs the make release target with credentials from d
 spc: ## Checks if the Release Branch, Tag and Pypi version already exist
 	$(eval filtered_branches:= $(shell git branch --all | grep "release/${ONDEWO_SIP_VERSION}"))
 	$(eval filtered_tags:= $(shell git tag --list | grep "${ONDEWO_SIP_VERSION}"))
-# @if test "$(filtered_branches)" != ""; then echo "-- Test 1: Branch exists!!" & exit 1; else echo "-- Test 1: Branch is fine";fi
-# @if test "$(filtered_tags)" != ""; then echo "-- Test 2: Tag exists!!" & exit 1; else echo "-- Test 2: Tag is fine";fi
+	@if test "$(filtered_branches)" != ""; then echo "-- Test 1: Branch exists!!" & exit 1; else echo "-- Test 1: Branch is fine";fi
+	@if test "$(filtered_tags)" != ""; then echo "-- Test 2: Tag exists!!" & exit 1; else echo "-- Test 2: Tag is fine";fi
 
 
 ########################################################
@@ -209,7 +209,7 @@ build: check_out_correct_submodule_versions build_compiler update_package npm_ru
 	@echo "################### PROMT FOR CHANGING FILE OWNERSHIP FROM ROOT TO YOU ##########################"
 	@for f in `ls -la | grep root | cut -c 56-200`; \
 	do \
-		sudo chown `whoami`:`whoami` $$f && echo $$f; \
+		sudo chown -R `whoami`:`whoami` $$f && echo $$f; \
 	done
 	npm i eslint --save-dev
 	npm i prettier --save-dev
