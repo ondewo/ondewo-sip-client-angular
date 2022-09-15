@@ -261,6 +261,8 @@ export declare class RegisterAccountRequest implements GrpcMessage {
 	static serializeBinaryToWriter(_instance: RegisterAccountRequest, _writer: BinaryWriter): void;
 	private _accountName?;
 	private _password?;
+	private _authUsername?;
+	private _outboundProxy?;
 	/**
 	 * Message constructor. Initializes the properties and applies default Protobuf values if necessary
 	 * @param _value initial values object or instance of RegisterAccountRequest to deeply clone from
@@ -270,6 +272,10 @@ export declare class RegisterAccountRequest implements GrpcMessage {
 	set accountName(value: string | undefined);
 	get password(): string | undefined;
 	set password(value: string | undefined);
+	get authUsername(): string | undefined;
+	set authUsername(value: string | undefined);
+	get outboundProxy(): string | undefined;
+	set outboundProxy(value: string | undefined);
 	/**
 	 * Serialize message to binary data
 	 * @param instance message instance
@@ -297,6 +303,8 @@ export declare module RegisterAccountRequest {
 	interface AsObject {
 		accountName?: string;
 		password?: string;
+		authUsername?: string;
+		outboundProxy?: string;
 	}
 	/**
 	 * Protobuf JSON representation for RegisterAccountRequest
@@ -304,6 +312,8 @@ export declare module RegisterAccountRequest {
 	interface AsProtobufJSON {
 		accountName?: string;
 		password?: string;
+		authUsername?: string;
+		outboundProxy?: string;
 	}
 }
 /**
@@ -575,6 +585,9 @@ export declare class SipStatus implements GrpcMessage {
 	private _calleeId?;
 	private _transferCallId?;
 	private _headers?;
+	private _description?;
+	private _exceptionName?;
+	private _exceptionTraceback?;
 	/**
 	 * Message constructor. Initializes the properties and applies default Protobuf values if necessary
 	 * @param _value initial values object or instance of SipStatus to deeply clone from
@@ -602,6 +615,12 @@ export declare class SipStatus implements GrpcMessage {
 			  }
 			| undefined
 	);
+	get description(): string | undefined;
+	set description(value: string | undefined);
+	get exceptionName(): string | undefined;
+	set exceptionName(value: string | undefined);
+	get exceptionTraceback(): string | undefined;
+	set exceptionTraceback(value: string | undefined);
 	/**
 	 * Serialize message to binary data
 	 * @param instance message instance
@@ -635,6 +654,9 @@ export declare module SipStatus {
 		headers?: {
 			[prop: string]: string;
 		};
+		description?: string;
+		exceptionName?: string;
+		exceptionTraceback?: string;
 	}
 	/**
 	 * Protobuf JSON representation for SipStatus
@@ -648,22 +670,33 @@ export declare module SipStatus {
 		headers?: {
 			[prop: string]: string;
 		};
+		description?: string;
+		exceptionName?: string;
+		exceptionTraceback?: string;
 	}
 	enum StatusType {
-		no_session = 0,
-		registered = 1,
-		ready = 2,
-		incoming_call_initiated = 3,
-		outgoing_call_initiated = 4,
-		outgoing_call_connected = 5,
-		incoming_call_connected = 6,
-		transfer_call_initiated = 7,
-		soft_hangup_initiated = 8,
-		hard_hangup_initiated = 9,
-		incoming_call_failed = 10,
-		outgoing_call_failed = 11,
-		incoming_call_finished = 12,
-		outgoing_call_finished = 13
+		NO_SESSION = 0,
+		REGISTERED = 1,
+		READY = 2,
+		INCOMING_CALL_INITIATED = 3,
+		OUTGOING_CALL_INITIATED = 4,
+		OUTGOING_CALL_CONNECTED = 5,
+		INCOMING_CALL_CONNECTED = 6,
+		TRANSFER_CALL_INITIATED = 7,
+		SOFT_HANGUP_INITIATED = 8,
+		HARD_HANGUP_INITIATED = 9,
+		INCOMING_CALL_FAILED = 10,
+		OUTGOING_CALL_FAILED = 11,
+		INCOMING_CALL_FINISHED = 12,
+		OUTGOING_CALL_FINISHED = 13,
+		SESSION_REGISTRATION_FAILED = 14,
+		SESSION_STARTED = 15,
+		SESSION_ENDED = 16,
+		TRANSFER_CALL_FAILED = 17,
+		MICROPHONE_MUTED = 18,
+		MICROPHONE_UNMUTED = 19,
+		MICROPHONE_WAV_FILES_PLAYED = 20,
+		NO_ONGOING_CALL = 21
 	}
 	/**
 	 * Message implementation for ondewo.sip.HeadersEntry

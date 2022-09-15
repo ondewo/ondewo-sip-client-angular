@@ -21,67 +21,67 @@ export declare class SipClient {
 		 *
 		 * @param requestMessage Request message
 		 * @param requestMetadata Request metadata
-		 * @returns Observable<GrpcEvent<googleProtobuf000.Empty>>
+		 * @returns Observable<GrpcEvent<thisProto.SipStatus>>
 		 */
 		startSession: (
 			requestData: thisProto.StartSessionRequest,
 			requestMetadata?: GrpcMetadata
-		) => Observable<GrpcEvent<googleProtobuf000.Empty>>;
+		) => Observable<GrpcEvent<thisProto.SipStatus>>;
 		/**
 		 * Unary call: /ondewo.sip.Sip/EndSession
 		 *
 		 * @param requestMessage Request message
 		 * @param requestMetadata Request metadata
-		 * @returns Observable<GrpcEvent<googleProtobuf000.Empty>>
+		 * @returns Observable<GrpcEvent<thisProto.SipStatus>>
 		 */
 		endSession: (
 			requestData: googleProtobuf000.Empty,
 			requestMetadata?: GrpcMetadata
-		) => Observable<GrpcEvent<googleProtobuf000.Empty>>;
+		) => Observable<GrpcEvent<thisProto.SipStatus>>;
 		/**
 		 * Unary call: /ondewo.sip.Sip/StartCall
 		 *
 		 * @param requestMessage Request message
 		 * @param requestMetadata Request metadata
-		 * @returns Observable<GrpcEvent<googleProtobuf000.Empty>>
+		 * @returns Observable<GrpcEvent<thisProto.SipStatus>>
 		 */
 		startCall: (
 			requestData: thisProto.StartCallRequest,
 			requestMetadata?: GrpcMetadata
-		) => Observable<GrpcEvent<googleProtobuf000.Empty>>;
+		) => Observable<GrpcEvent<thisProto.SipStatus>>;
 		/**
 		 * Unary call: /ondewo.sip.Sip/EndCall
 		 *
 		 * @param requestMessage Request message
 		 * @param requestMetadata Request metadata
-		 * @returns Observable<GrpcEvent<googleProtobuf000.Empty>>
+		 * @returns Observable<GrpcEvent<thisProto.SipStatus>>
 		 */
 		endCall: (
 			requestData: thisProto.EndCallRequest,
 			requestMetadata?: GrpcMetadata
-		) => Observable<GrpcEvent<googleProtobuf000.Empty>>;
+		) => Observable<GrpcEvent<thisProto.SipStatus>>;
 		/**
 		 * Unary call: /ondewo.sip.Sip/TransferCall
 		 *
 		 * @param requestMessage Request message
 		 * @param requestMetadata Request metadata
-		 * @returns Observable<GrpcEvent<googleProtobuf000.Empty>>
+		 * @returns Observable<GrpcEvent<thisProto.SipStatus>>
 		 */
 		transferCall: (
 			requestData: thisProto.TransferCallRequest,
 			requestMetadata?: GrpcMetadata
-		) => Observable<GrpcEvent<googleProtobuf000.Empty>>;
+		) => Observable<GrpcEvent<thisProto.SipStatus>>;
 		/**
 		 * Unary call: /ondewo.sip.Sip/RegisterAccount
 		 *
 		 * @param requestMessage Request message
 		 * @param requestMetadata Request metadata
-		 * @returns Observable<GrpcEvent<googleProtobuf000.Empty>>
+		 * @returns Observable<GrpcEvent<thisProto.SipStatus>>
 		 */
 		registerAccount: (
 			requestData: thisProto.RegisterAccountRequest,
 			requestMetadata?: GrpcMetadata
-		) => Observable<GrpcEvent<googleProtobuf000.Empty>>;
+		) => Observable<GrpcEvent<thisProto.SipStatus>>;
 		/**
 		 * Unary call: /ondewo.sip.Sip/GetSipStatus
 		 *
@@ -109,34 +109,34 @@ export declare class SipClient {
 		 *
 		 * @param requestMessage Request message
 		 * @param requestMetadata Request metadata
-		 * @returns Observable<GrpcEvent<googleProtobuf000.Empty>>
+		 * @returns Observable<GrpcEvent<thisProto.SipStatus>>
 		 */
 		playWavFiles: (
 			requestData: thisProto.PlayWavFilesRequest,
 			requestMetadata?: GrpcMetadata
-		) => Observable<GrpcEvent<googleProtobuf000.Empty>>;
+		) => Observable<GrpcEvent<thisProto.SipStatus>>;
 		/**
 		 * Unary call: /ondewo.sip.Sip/Mute
 		 *
 		 * @param requestMessage Request message
 		 * @param requestMetadata Request metadata
-		 * @returns Observable<GrpcEvent<googleProtobuf000.Empty>>
+		 * @returns Observable<GrpcEvent<thisProto.SipStatus>>
 		 */
 		mute: (
 			requestData: googleProtobuf000.Empty,
 			requestMetadata?: GrpcMetadata
-		) => Observable<GrpcEvent<googleProtobuf000.Empty>>;
+		) => Observable<GrpcEvent<thisProto.SipStatus>>;
 		/**
 		 * Unary call: /ondewo.sip.Sip/UnMute
 		 *
 		 * @param requestMessage Request message
 		 * @param requestMetadata Request metadata
-		 * @returns Observable<GrpcEvent<googleProtobuf000.Empty>>
+		 * @returns Observable<GrpcEvent<thisProto.SipStatus>>
 		 */
 		unMute: (
 			requestData: googleProtobuf000.Empty,
 			requestMetadata?: GrpcMetadata
-		) => Observable<GrpcEvent<googleProtobuf000.Empty>>;
+		) => Observable<GrpcEvent<thisProto.SipStatus>>;
 	};
 	constructor(settings: any, clientFactory: GrpcClientFactory<any>, handler: GrpcHandler);
 	/**
@@ -144,61 +144,58 @@ export declare class SipClient {
 	 *
 	 * @param requestMessage Request message
 	 * @param requestMetadata Request metadata
-	 * @returns Observable<googleProtobuf000.Empty>
+	 * @returns Observable<thisProto.SipStatus>
 	 */
 	startSession(
 		requestData: thisProto.StartSessionRequest,
 		requestMetadata?: GrpcMetadata
-	): Observable<googleProtobuf000.Empty>;
+	): Observable<thisProto.SipStatus>;
 	/**
 	 * Unary call @/ondewo.sip.Sip/EndSession
 	 *
 	 * @param requestMessage Request message
 	 * @param requestMetadata Request metadata
-	 * @returns Observable<googleProtobuf000.Empty>
+	 * @returns Observable<thisProto.SipStatus>
 	 */
-	endSession(requestData: googleProtobuf000.Empty, requestMetadata?: GrpcMetadata): Observable<googleProtobuf000.Empty>;
+	endSession(requestData: googleProtobuf000.Empty, requestMetadata?: GrpcMetadata): Observable<thisProto.SipStatus>;
 	/**
 	 * Unary call @/ondewo.sip.Sip/StartCall
 	 *
 	 * @param requestMessage Request message
 	 * @param requestMetadata Request metadata
-	 * @returns Observable<googleProtobuf000.Empty>
+	 * @returns Observable<thisProto.SipStatus>
 	 */
-	startCall(
-		requestData: thisProto.StartCallRequest,
-		requestMetadata?: GrpcMetadata
-	): Observable<googleProtobuf000.Empty>;
+	startCall(requestData: thisProto.StartCallRequest, requestMetadata?: GrpcMetadata): Observable<thisProto.SipStatus>;
 	/**
 	 * Unary call @/ondewo.sip.Sip/EndCall
 	 *
 	 * @param requestMessage Request message
 	 * @param requestMetadata Request metadata
-	 * @returns Observable<googleProtobuf000.Empty>
+	 * @returns Observable<thisProto.SipStatus>
 	 */
-	endCall(requestData: thisProto.EndCallRequest, requestMetadata?: GrpcMetadata): Observable<googleProtobuf000.Empty>;
+	endCall(requestData: thisProto.EndCallRequest, requestMetadata?: GrpcMetadata): Observable<thisProto.SipStatus>;
 	/**
 	 * Unary call @/ondewo.sip.Sip/TransferCall
 	 *
 	 * @param requestMessage Request message
 	 * @param requestMetadata Request metadata
-	 * @returns Observable<googleProtobuf000.Empty>
+	 * @returns Observable<thisProto.SipStatus>
 	 */
 	transferCall(
 		requestData: thisProto.TransferCallRequest,
 		requestMetadata?: GrpcMetadata
-	): Observable<googleProtobuf000.Empty>;
+	): Observable<thisProto.SipStatus>;
 	/**
 	 * Unary call @/ondewo.sip.Sip/RegisterAccount
 	 *
 	 * @param requestMessage Request message
 	 * @param requestMetadata Request metadata
-	 * @returns Observable<googleProtobuf000.Empty>
+	 * @returns Observable<thisProto.SipStatus>
 	 */
 	registerAccount(
 		requestData: thisProto.RegisterAccountRequest,
 		requestMetadata?: GrpcMetadata
-	): Observable<googleProtobuf000.Empty>;
+	): Observable<thisProto.SipStatus>;
 	/**
 	 * Unary call @/ondewo.sip.Sip/GetSipStatus
 	 *
@@ -223,28 +220,28 @@ export declare class SipClient {
 	 *
 	 * @param requestMessage Request message
 	 * @param requestMetadata Request metadata
-	 * @returns Observable<googleProtobuf000.Empty>
+	 * @returns Observable<thisProto.SipStatus>
 	 */
 	playWavFiles(
 		requestData: thisProto.PlayWavFilesRequest,
 		requestMetadata?: GrpcMetadata
-	): Observable<googleProtobuf000.Empty>;
+	): Observable<thisProto.SipStatus>;
 	/**
 	 * Unary call @/ondewo.sip.Sip/Mute
 	 *
 	 * @param requestMessage Request message
 	 * @param requestMetadata Request metadata
-	 * @returns Observable<googleProtobuf000.Empty>
+	 * @returns Observable<thisProto.SipStatus>
 	 */
-	mute(requestData: googleProtobuf000.Empty, requestMetadata?: GrpcMetadata): Observable<googleProtobuf000.Empty>;
+	mute(requestData: googleProtobuf000.Empty, requestMetadata?: GrpcMetadata): Observable<thisProto.SipStatus>;
 	/**
 	 * Unary call @/ondewo.sip.Sip/UnMute
 	 *
 	 * @param requestMessage Request message
 	 * @param requestMetadata Request metadata
-	 * @returns Observable<googleProtobuf000.Empty>
+	 * @returns Observable<thisProto.SipStatus>
 	 */
-	unMute(requestData: googleProtobuf000.Empty, requestMetadata?: GrpcMetadata): Observable<googleProtobuf000.Empty>;
+	unMute(requestData: googleProtobuf000.Empty, requestMetadata?: GrpcMetadata): Observable<thisProto.SipStatus>;
 	static ɵfac: i0.ɵɵFactoryDeclaration<SipClient, [{ optional: true }, null, null]>;
 	static ɵprov: i0.ɵɵInjectableDeclaration<SipClient>;
 }

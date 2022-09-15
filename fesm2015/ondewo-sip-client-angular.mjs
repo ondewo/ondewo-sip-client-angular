@@ -375,6 +375,8 @@ class RegisterAccountRequest {
 		_value = _value || {};
 		this.accountName = _value.accountName;
 		this.password = _value.password;
+		this.authUsername = _value.authUsername;
+		this.outboundProxy = _value.outboundProxy;
 		RegisterAccountRequest.refineValues(this);
 	}
 	/**
@@ -393,6 +395,8 @@ class RegisterAccountRequest {
 	static refineValues(_instance) {
 		_instance.accountName = _instance.accountName || '';
 		_instance.password = _instance.password || '';
+		_instance.authUsername = _instance.authUsername || '';
+		_instance.outboundProxy = _instance.outboundProxy || '';
 	}
 	/**
 	 * Deserializes / reads binary message into message instance using provided binary reader
@@ -408,6 +412,12 @@ class RegisterAccountRequest {
 					break;
 				case 2:
 					_instance.password = _reader.readString();
+					break;
+				case 3:
+					_instance.authUsername = _reader.readString();
+					break;
+				case 4:
+					_instance.outboundProxy = _reader.readString();
 					break;
 				default:
 					_reader.skipField();
@@ -427,6 +437,12 @@ class RegisterAccountRequest {
 		if (_instance.password) {
 			_writer.writeString(2, _instance.password);
 		}
+		if (_instance.authUsername) {
+			_writer.writeString(3, _instance.authUsername);
+		}
+		if (_instance.outboundProxy) {
+			_writer.writeString(4, _instance.outboundProxy);
+		}
 	}
 	get accountName() {
 		return this._accountName;
@@ -439,6 +455,18 @@ class RegisterAccountRequest {
 	}
 	set password(value) {
 		this._password = value;
+	}
+	get authUsername() {
+		return this._authUsername;
+	}
+	set authUsername(value) {
+		this._authUsername = value;
+	}
+	get outboundProxy() {
+		return this._outboundProxy;
+	}
+	set outboundProxy(value) {
+		this._outboundProxy = value;
 	}
 	/**
 	 * Serialize message to binary data
@@ -455,7 +483,9 @@ class RegisterAccountRequest {
 	toObject() {
 		return {
 			accountName: this.accountName,
-			password: this.password
+			password: this.password,
+			authUsername: this.authUsername,
+			outboundProxy: this.outboundProxy
 		};
 	}
 	/**
@@ -475,7 +505,9 @@ class RegisterAccountRequest {
 	) {
 		return {
 			accountName: this.accountName,
-			password: this.password
+			password: this.password,
+			authUsername: this.authUsername,
+			outboundProxy: this.outboundProxy
 		};
 	}
 }
@@ -873,7 +905,10 @@ class SipStatus {
 					{}
 			  )
 			: {}),
-			SipStatus.refineValues(this);
+			(this.description = _value.description);
+		this.exceptionName = _value.exceptionName;
+		this.exceptionTraceback = _value.exceptionTraceback;
+		SipStatus.refineValues(this);
 	}
 	/**
 	 * Deserialize binary data to message
@@ -895,6 +930,9 @@ class SipStatus {
 		_instance.calleeId = _instance.calleeId || '';
 		_instance.transferCallId = _instance.transferCallId || '';
 		_instance.headers = _instance.headers || {};
+		_instance.description = _instance.description || '';
+		_instance.exceptionName = _instance.exceptionName || '';
+		_instance.exceptionTraceback = _instance.exceptionTraceback || '';
 	}
 	/**
 	 * Deserializes / reads binary message into message instance using provided binary reader
@@ -926,6 +964,15 @@ class SipStatus {
 					_reader.readMessage(msg_6, SipStatus.HeadersEntry.deserializeBinaryFromReader);
 					_instance.headers = _instance.headers || {};
 					_instance.headers[msg_6.key] = msg_6.value;
+					break;
+				case 7:
+					_instance.description = _reader.readString();
+					break;
+				case 8:
+					_instance.exceptionName = _reader.readString();
+					break;
+				case 9:
+					_instance.exceptionTraceback = _reader.readString();
 					break;
 				default:
 					_reader.skipField();
@@ -962,6 +1009,15 @@ class SipStatus {
 					.reduce((r, v) => [...r, v], []);
 				_writer.writeRepeatedMessage(6, repeated_6, SipStatus.HeadersEntry.serializeBinaryToWriter);
 			}
+		}
+		if (_instance.description) {
+			_writer.writeString(7, _instance.description);
+		}
+		if (_instance.exceptionName) {
+			_writer.writeString(8, _instance.exceptionName);
+		}
+		if (_instance.exceptionTraceback) {
+			_writer.writeString(9, _instance.exceptionTraceback);
 		}
 	}
 	get accountName() {
@@ -1000,6 +1056,24 @@ class SipStatus {
 	set headers(value) {
 		this._headers = value;
 	}
+	get description() {
+		return this._description;
+	}
+	set description(value) {
+		this._description = value;
+	}
+	get exceptionName() {
+		return this._exceptionName;
+	}
+	set exceptionName(value) {
+		this._exceptionName = value;
+	}
+	get exceptionTraceback() {
+		return this._exceptionTraceback;
+	}
+	set exceptionTraceback(value) {
+		this._exceptionTraceback = value;
+	}
 	/**
 	 * Serialize message to binary data
 	 * @param instance message instance
@@ -1021,7 +1095,10 @@ class SipStatus {
 			transferCallId: this.transferCallId,
 			headers: this.headers
 				? Object.keys(this.headers).reduce((r, k) => Object.assign(Object.assign({}, r), { [k]: this.headers[k] }), {})
-				: {}
+				: {},
+			description: this.description,
+			exceptionName: this.exceptionName,
+			exceptionTraceback: this.exceptionTraceback
 		};
 	}
 	/**
@@ -1047,7 +1124,10 @@ class SipStatus {
 			transferCallId: this.transferCallId,
 			headers: this.headers
 				? Object.keys(this.headers).reduce((r, k) => Object.assign(Object.assign({}, r), { [k]: this.headers[k] }), {})
-				: {}
+				: {},
+			description: this.description,
+			exceptionName: this.exceptionName,
+			exceptionTraceback: this.exceptionTraceback
 		};
 	}
 }
@@ -1055,20 +1135,28 @@ SipStatus.id = 'ondewo.sip.SipStatus';
 (function (SipStatus) {
 	let StatusType;
 	(function (StatusType) {
-		StatusType[(StatusType['no_session'] = 0)] = 'no_session';
-		StatusType[(StatusType['registered'] = 1)] = 'registered';
-		StatusType[(StatusType['ready'] = 2)] = 'ready';
-		StatusType[(StatusType['incoming_call_initiated'] = 3)] = 'incoming_call_initiated';
-		StatusType[(StatusType['outgoing_call_initiated'] = 4)] = 'outgoing_call_initiated';
-		StatusType[(StatusType['outgoing_call_connected'] = 5)] = 'outgoing_call_connected';
-		StatusType[(StatusType['incoming_call_connected'] = 6)] = 'incoming_call_connected';
-		StatusType[(StatusType['transfer_call_initiated'] = 7)] = 'transfer_call_initiated';
-		StatusType[(StatusType['soft_hangup_initiated'] = 8)] = 'soft_hangup_initiated';
-		StatusType[(StatusType['hard_hangup_initiated'] = 9)] = 'hard_hangup_initiated';
-		StatusType[(StatusType['incoming_call_failed'] = 10)] = 'incoming_call_failed';
-		StatusType[(StatusType['outgoing_call_failed'] = 11)] = 'outgoing_call_failed';
-		StatusType[(StatusType['incoming_call_finished'] = 12)] = 'incoming_call_finished';
-		StatusType[(StatusType['outgoing_call_finished'] = 13)] = 'outgoing_call_finished';
+		StatusType[(StatusType['NO_SESSION'] = 0)] = 'NO_SESSION';
+		StatusType[(StatusType['REGISTERED'] = 1)] = 'REGISTERED';
+		StatusType[(StatusType['READY'] = 2)] = 'READY';
+		StatusType[(StatusType['INCOMING_CALL_INITIATED'] = 3)] = 'INCOMING_CALL_INITIATED';
+		StatusType[(StatusType['OUTGOING_CALL_INITIATED'] = 4)] = 'OUTGOING_CALL_INITIATED';
+		StatusType[(StatusType['OUTGOING_CALL_CONNECTED'] = 5)] = 'OUTGOING_CALL_CONNECTED';
+		StatusType[(StatusType['INCOMING_CALL_CONNECTED'] = 6)] = 'INCOMING_CALL_CONNECTED';
+		StatusType[(StatusType['TRANSFER_CALL_INITIATED'] = 7)] = 'TRANSFER_CALL_INITIATED';
+		StatusType[(StatusType['SOFT_HANGUP_INITIATED'] = 8)] = 'SOFT_HANGUP_INITIATED';
+		StatusType[(StatusType['HARD_HANGUP_INITIATED'] = 9)] = 'HARD_HANGUP_INITIATED';
+		StatusType[(StatusType['INCOMING_CALL_FAILED'] = 10)] = 'INCOMING_CALL_FAILED';
+		StatusType[(StatusType['OUTGOING_CALL_FAILED'] = 11)] = 'OUTGOING_CALL_FAILED';
+		StatusType[(StatusType['INCOMING_CALL_FINISHED'] = 12)] = 'INCOMING_CALL_FINISHED';
+		StatusType[(StatusType['OUTGOING_CALL_FINISHED'] = 13)] = 'OUTGOING_CALL_FINISHED';
+		StatusType[(StatusType['SESSION_REGISTRATION_FAILED'] = 14)] = 'SESSION_REGISTRATION_FAILED';
+		StatusType[(StatusType['SESSION_STARTED'] = 15)] = 'SESSION_STARTED';
+		StatusType[(StatusType['SESSION_ENDED'] = 16)] = 'SESSION_ENDED';
+		StatusType[(StatusType['TRANSFER_CALL_FAILED'] = 17)] = 'TRANSFER_CALL_FAILED';
+		StatusType[(StatusType['MICROPHONE_MUTED'] = 18)] = 'MICROPHONE_MUTED';
+		StatusType[(StatusType['MICROPHONE_UNMUTED'] = 19)] = 'MICROPHONE_UNMUTED';
+		StatusType[(StatusType['MICROPHONE_WAV_FILES_PLAYED'] = 20)] = 'MICROPHONE_WAV_FILES_PLAYED';
+		StatusType[(StatusType['NO_ONGOING_CALL'] = 21)] = 'NO_ONGOING_CALL';
 	})((StatusType = SipStatus.StatusType || (SipStatus.StatusType = {})));
 	/**
 	 * Message implementation for ondewo.sip.HeadersEntry
@@ -1419,7 +1507,7 @@ class SipClient {
 			 *
 			 * @param requestMessage Request message
 			 * @param requestMetadata Request metadata
-			 * @returns Observable<GrpcEvent<googleProtobuf000.Empty>>
+			 * @returns Observable<GrpcEvent<thisProto.SipStatus>>
 			 */
 			startSession: (requestData, requestMetadata = new GrpcMetadata()) => {
 				return this.handler.handle({
@@ -1429,7 +1517,7 @@ class SipClient {
 					requestData,
 					requestMetadata,
 					requestClass: StartSessionRequest,
-					responseClass: googleProtobuf000.Empty
+					responseClass: SipStatus
 				});
 			},
 			/**
@@ -1437,7 +1525,7 @@ class SipClient {
 			 *
 			 * @param requestMessage Request message
 			 * @param requestMetadata Request metadata
-			 * @returns Observable<GrpcEvent<googleProtobuf000.Empty>>
+			 * @returns Observable<GrpcEvent<thisProto.SipStatus>>
 			 */
 			endSession: (requestData, requestMetadata = new GrpcMetadata()) => {
 				return this.handler.handle({
@@ -1447,7 +1535,7 @@ class SipClient {
 					requestData,
 					requestMetadata,
 					requestClass: googleProtobuf000.Empty,
-					responseClass: googleProtobuf000.Empty
+					responseClass: SipStatus
 				});
 			},
 			/**
@@ -1455,7 +1543,7 @@ class SipClient {
 			 *
 			 * @param requestMessage Request message
 			 * @param requestMetadata Request metadata
-			 * @returns Observable<GrpcEvent<googleProtobuf000.Empty>>
+			 * @returns Observable<GrpcEvent<thisProto.SipStatus>>
 			 */
 			startCall: (requestData, requestMetadata = new GrpcMetadata()) => {
 				return this.handler.handle({
@@ -1465,7 +1553,7 @@ class SipClient {
 					requestData,
 					requestMetadata,
 					requestClass: StartCallRequest,
-					responseClass: googleProtobuf000.Empty
+					responseClass: SipStatus
 				});
 			},
 			/**
@@ -1473,7 +1561,7 @@ class SipClient {
 			 *
 			 * @param requestMessage Request message
 			 * @param requestMetadata Request metadata
-			 * @returns Observable<GrpcEvent<googleProtobuf000.Empty>>
+			 * @returns Observable<GrpcEvent<thisProto.SipStatus>>
 			 */
 			endCall: (requestData, requestMetadata = new GrpcMetadata()) => {
 				return this.handler.handle({
@@ -1483,7 +1571,7 @@ class SipClient {
 					requestData,
 					requestMetadata,
 					requestClass: EndCallRequest,
-					responseClass: googleProtobuf000.Empty
+					responseClass: SipStatus
 				});
 			},
 			/**
@@ -1491,7 +1579,7 @@ class SipClient {
 			 *
 			 * @param requestMessage Request message
 			 * @param requestMetadata Request metadata
-			 * @returns Observable<GrpcEvent<googleProtobuf000.Empty>>
+			 * @returns Observable<GrpcEvent<thisProto.SipStatus>>
 			 */
 			transferCall: (requestData, requestMetadata = new GrpcMetadata()) => {
 				return this.handler.handle({
@@ -1501,7 +1589,7 @@ class SipClient {
 					requestData,
 					requestMetadata,
 					requestClass: TransferCallRequest,
-					responseClass: googleProtobuf000.Empty
+					responseClass: SipStatus
 				});
 			},
 			/**
@@ -1509,7 +1597,7 @@ class SipClient {
 			 *
 			 * @param requestMessage Request message
 			 * @param requestMetadata Request metadata
-			 * @returns Observable<GrpcEvent<googleProtobuf000.Empty>>
+			 * @returns Observable<GrpcEvent<thisProto.SipStatus>>
 			 */
 			registerAccount: (requestData, requestMetadata = new GrpcMetadata()) => {
 				return this.handler.handle({
@@ -1519,7 +1607,7 @@ class SipClient {
 					requestData,
 					requestMetadata,
 					requestClass: RegisterAccountRequest,
-					responseClass: googleProtobuf000.Empty
+					responseClass: SipStatus
 				});
 			},
 			/**
@@ -1563,7 +1651,7 @@ class SipClient {
 			 *
 			 * @param requestMessage Request message
 			 * @param requestMetadata Request metadata
-			 * @returns Observable<GrpcEvent<googleProtobuf000.Empty>>
+			 * @returns Observable<GrpcEvent<thisProto.SipStatus>>
 			 */
 			playWavFiles: (requestData, requestMetadata = new GrpcMetadata()) => {
 				return this.handler.handle({
@@ -1573,7 +1661,7 @@ class SipClient {
 					requestData,
 					requestMetadata,
 					requestClass: PlayWavFilesRequest,
-					responseClass: googleProtobuf000.Empty
+					responseClass: SipStatus
 				});
 			},
 			/**
@@ -1581,7 +1669,7 @@ class SipClient {
 			 *
 			 * @param requestMessage Request message
 			 * @param requestMetadata Request metadata
-			 * @returns Observable<GrpcEvent<googleProtobuf000.Empty>>
+			 * @returns Observable<GrpcEvent<thisProto.SipStatus>>
 			 */
 			mute: (requestData, requestMetadata = new GrpcMetadata()) => {
 				return this.handler.handle({
@@ -1591,7 +1679,7 @@ class SipClient {
 					requestData,
 					requestMetadata,
 					requestClass: googleProtobuf000.Empty,
-					responseClass: googleProtobuf000.Empty
+					responseClass: SipStatus
 				});
 			},
 			/**
@@ -1599,7 +1687,7 @@ class SipClient {
 			 *
 			 * @param requestMessage Request message
 			 * @param requestMetadata Request metadata
-			 * @returns Observable<GrpcEvent<googleProtobuf000.Empty>>
+			 * @returns Observable<GrpcEvent<thisProto.SipStatus>>
 			 */
 			unMute: (requestData, requestMetadata = new GrpcMetadata()) => {
 				return this.handler.handle({
@@ -1609,7 +1697,7 @@ class SipClient {
 					requestData,
 					requestMetadata,
 					requestClass: googleProtobuf000.Empty,
-					responseClass: googleProtobuf000.Empty
+					responseClass: SipStatus
 				});
 			}
 		};
@@ -1620,7 +1708,7 @@ class SipClient {
 	 *
 	 * @param requestMessage Request message
 	 * @param requestMetadata Request metadata
-	 * @returns Observable<googleProtobuf000.Empty>
+	 * @returns Observable<thisProto.SipStatus>
 	 */
 	startSession(requestData, requestMetadata = new GrpcMetadata()) {
 		return this.$raw.startSession(requestData, requestMetadata).pipe(throwStatusErrors(), takeMessages());
@@ -1630,7 +1718,7 @@ class SipClient {
 	 *
 	 * @param requestMessage Request message
 	 * @param requestMetadata Request metadata
-	 * @returns Observable<googleProtobuf000.Empty>
+	 * @returns Observable<thisProto.SipStatus>
 	 */
 	endSession(requestData, requestMetadata = new GrpcMetadata()) {
 		return this.$raw.endSession(requestData, requestMetadata).pipe(throwStatusErrors(), takeMessages());
@@ -1640,7 +1728,7 @@ class SipClient {
 	 *
 	 * @param requestMessage Request message
 	 * @param requestMetadata Request metadata
-	 * @returns Observable<googleProtobuf000.Empty>
+	 * @returns Observable<thisProto.SipStatus>
 	 */
 	startCall(requestData, requestMetadata = new GrpcMetadata()) {
 		return this.$raw.startCall(requestData, requestMetadata).pipe(throwStatusErrors(), takeMessages());
@@ -1650,7 +1738,7 @@ class SipClient {
 	 *
 	 * @param requestMessage Request message
 	 * @param requestMetadata Request metadata
-	 * @returns Observable<googleProtobuf000.Empty>
+	 * @returns Observable<thisProto.SipStatus>
 	 */
 	endCall(requestData, requestMetadata = new GrpcMetadata()) {
 		return this.$raw.endCall(requestData, requestMetadata).pipe(throwStatusErrors(), takeMessages());
@@ -1660,7 +1748,7 @@ class SipClient {
 	 *
 	 * @param requestMessage Request message
 	 * @param requestMetadata Request metadata
-	 * @returns Observable<googleProtobuf000.Empty>
+	 * @returns Observable<thisProto.SipStatus>
 	 */
 	transferCall(requestData, requestMetadata = new GrpcMetadata()) {
 		return this.$raw.transferCall(requestData, requestMetadata).pipe(throwStatusErrors(), takeMessages());
@@ -1670,7 +1758,7 @@ class SipClient {
 	 *
 	 * @param requestMessage Request message
 	 * @param requestMetadata Request metadata
-	 * @returns Observable<googleProtobuf000.Empty>
+	 * @returns Observable<thisProto.SipStatus>
 	 */
 	registerAccount(requestData, requestMetadata = new GrpcMetadata()) {
 		return this.$raw.registerAccount(requestData, requestMetadata).pipe(throwStatusErrors(), takeMessages());
@@ -1700,7 +1788,7 @@ class SipClient {
 	 *
 	 * @param requestMessage Request message
 	 * @param requestMetadata Request metadata
-	 * @returns Observable<googleProtobuf000.Empty>
+	 * @returns Observable<thisProto.SipStatus>
 	 */
 	playWavFiles(requestData, requestMetadata = new GrpcMetadata()) {
 		return this.$raw.playWavFiles(requestData, requestMetadata).pipe(throwStatusErrors(), takeMessages());
@@ -1710,7 +1798,7 @@ class SipClient {
 	 *
 	 * @param requestMessage Request message
 	 * @param requestMetadata Request metadata
-	 * @returns Observable<googleProtobuf000.Empty>
+	 * @returns Observable<thisProto.SipStatus>
 	 */
 	mute(requestData, requestMetadata = new GrpcMetadata()) {
 		return this.$raw.mute(requestData, requestMetadata).pipe(throwStatusErrors(), takeMessages());
@@ -1720,7 +1808,7 @@ class SipClient {
 	 *
 	 * @param requestMessage Request message
 	 * @param requestMetadata Request metadata
-	 * @returns Observable<googleProtobuf000.Empty>
+	 * @returns Observable<thisProto.SipStatus>
 	 */
 	unMute(requestData, requestMetadata = new GrpcMetadata()) {
 		return this.$raw.unMute(requestData, requestMetadata).pipe(throwStatusErrors(), takeMessages());
