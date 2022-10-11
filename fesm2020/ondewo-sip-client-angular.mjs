@@ -238,7 +238,7 @@ class StartCallRequest {
 StartCallRequest.id = 'ondewo.sip.StartCallRequest';
 (function (StartCallRequest) {
 	/**
-	 * Message implementation for ondewo.sip.HeadersEntry
+	 * Message implementation for ondewo.sip.StartCallRequest.HeadersEntry
 	 */
 	class HeadersEntry {
 		/**
@@ -353,7 +353,7 @@ StartCallRequest.id = 'ondewo.sip.StartCallRequest';
 			};
 		}
 	}
-	HeadersEntry.id = 'ondewo.sip.HeadersEntry';
+	HeadersEntry.id = 'ondewo.sip.StartCallRequest.HeadersEntry';
 	StartCallRequest.HeadersEntry = HeadersEntry;
 })(StartCallRequest || (StartCallRequest = {}));
 /**
@@ -752,7 +752,7 @@ class TransferCallRequest {
 TransferCallRequest.id = 'ondewo.sip.TransferCallRequest';
 (function (TransferCallRequest) {
 	/**
-	 * Message implementation for ondewo.sip.HeadersEntry
+	 * Message implementation for ondewo.sip.TransferCallRequest.HeadersEntry
 	 */
 	class HeadersEntry {
 		/**
@@ -867,7 +867,7 @@ TransferCallRequest.id = 'ondewo.sip.TransferCallRequest';
 			};
 		}
 	}
-	HeadersEntry.id = 'ondewo.sip.HeadersEntry';
+	HeadersEntry.id = 'ondewo.sip.TransferCallRequest.HeadersEntry';
 	TransferCallRequest.HeadersEntry = HeadersEntry;
 })(TransferCallRequest || (TransferCallRequest = {}));
 /**
@@ -1138,7 +1138,7 @@ SipStatus.id = 'ondewo.sip.SipStatus';
 		StatusType[(StatusType['NO_ONGOING_CALL'] = 21)] = 'NO_ONGOING_CALL';
 	})((StatusType = SipStatus.StatusType || (SipStatus.StatusType = {})));
 	/**
-	 * Message implementation for ondewo.sip.HeadersEntry
+	 * Message implementation for ondewo.sip.SipStatus.HeadersEntry
 	 */
 	class HeadersEntry {
 		/**
@@ -1253,7 +1253,7 @@ SipStatus.id = 'ondewo.sip.SipStatus';
 			};
 		}
 	}
-	HeadersEntry.id = 'ondewo.sip.HeadersEntry';
+	HeadersEntry.id = 'ondewo.sip.SipStatus.HeadersEntry';
 	SipStatus.HeadersEntry = HeadersEntry;
 })(SipStatus || (SipStatus = {}));
 /**
@@ -1795,7 +1795,7 @@ class SipClient {
 }
 SipClient.ɵfac = i0.ɵɵngDeclareFactory({
 	minVersion: '12.0.0',
-	version: '14.2.0',
+	version: '14.2.5',
 	ngImport: i0,
 	type: SipClient,
 	deps: [
@@ -1807,14 +1807,14 @@ SipClient.ɵfac = i0.ɵɵngDeclareFactory({
 });
 SipClient.ɵprov = i0.ɵɵngDeclareInjectable({
 	minVersion: '12.0.0',
-	version: '14.2.0',
+	version: '14.2.5',
 	ngImport: i0,
 	type: SipClient,
 	providedIn: 'any'
 });
 i0.ɵɵngDeclareClassMetadata({
 	minVersion: '12.0.0',
-	version: '14.2.0',
+	version: '14.2.5',
 	ngImport: i0,
 	type: SipClient,
 	decorators: [

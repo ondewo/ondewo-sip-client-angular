@@ -158,7 +158,7 @@ export declare module StartCallRequest {
 		};
 	}
 	/**
-	 * Message implementation for ondewo.sip.HeadersEntry
+	 * Message implementation for ondewo.sip.StartCallRequest.HeadersEntry
 	 */
 	class HeadersEntry implements GrpcMessage {
 		static id: string;
@@ -478,7 +478,7 @@ export declare module TransferCallRequest {
 		};
 	}
 	/**
-	 * Message implementation for ondewo.sip.HeadersEntry
+	 * Message implementation for ondewo.sip.TransferCallRequest.HeadersEntry
 	 */
 	class HeadersEntry implements GrpcMessage {
 		static id: string;
@@ -699,7 +699,7 @@ export declare module SipStatus {
 		NO_ONGOING_CALL = 21
 	}
 	/**
-	 * Message implementation for ondewo.sip.HeadersEntry
+	 * Message implementation for ondewo.sip.SipStatus.HeadersEntry
 	 */
 	class HeadersEntry implements GrpcMessage {
 		static id: string;

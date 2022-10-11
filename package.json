@@ -47,7 +47,7 @@
 		"tslib": "^2.3.0"
 	},
 	"devDependencies": {
-		"@typescript-eslint/eslint-plugin": "^5.39.0",
+		"@typescript-eslint/eslint-plugin": "^5.40.0",
 		"eslint": "^8.25.0",
 		"husky": "^8.0.1",
 		"prettier": "^2.7.1"
