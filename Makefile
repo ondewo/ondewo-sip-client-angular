@@ -18,7 +18,7 @@ export
 ONDEWO_SIP_VERSION = 4.0.0
 
 SIP_API_GIT_BRANCH=tags/4.0.0
-ONDEWO_PROTO_COMPILER_GIT_BRANCH=tags/4.1.2
+ONDEWO_PROTO_COMPILER_GIT_BRANCH=tags/4.6.0
 ONDEWO_PROTO_COMPILER_DIR=ondewo-proto-compiler
 SIP_APIS_DIR=src/ondewo-sip-api
 SIP_PROTOS_DIR=${SIP_APIS_DIR}/ondewo
@@ -225,8 +225,10 @@ check_out_correct_submodule_versions: ## Fetches all Submodules and checksout sp
 	git submodule update --init --recursive
 	git -C ${SIP_APIS_DIR} fetch --all
 	git -C ${SIP_APIS_DIR} checkout ${SIP_API_GIT_BRANCH}
+	git -C ${SIP_APIS_DIR} pull
 	git -C ${ONDEWO_PROTO_COMPILER_DIR} fetch --all
 	git -C ${ONDEWO_PROTO_COMPILER_DIR} checkout ${ONDEWO_PROTO_COMPILER_GIT_BRANCH}
+	git -C ${ONDEWO_PROTO_COMPILER_DIR} pull
 	@echo "DONE checking out correct submodule versions."
 
 npm_run_build: ## Runs the build command in package.json
