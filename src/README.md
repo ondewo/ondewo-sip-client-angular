@@ -55,7 +55,7 @@ npm
 │           ├── sip.pbconf.d.ts
 │           ├── sip.pb.d.ts
 │           └── sip.pbsc.d.ts
-├── esm2020
+├── esm2022
 │   ├── api
 │   │   └── ondewo
 │   │       └── sip
@@ -64,10 +64,7 @@ npm
 │   │           └── sip.pbsc.mjs
 │   ├── ondewo-sip-client-angular.mjs
 │   └── public-api.mjs
-├── fesm2015
-│   ├── ondewo-sip-client-angular.mjs
-│   └── ondewo-sip-client-angular.mjs.map
-├── fesm2020
+├── fesm2022
 │   ├── ondewo-sip-client-angular.mjs
 │   └── ondewo-sip-client-angular.mjs.map
 ├── ondewo-sip-api

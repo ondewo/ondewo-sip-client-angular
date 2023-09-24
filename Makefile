@@ -15,10 +15,10 @@ export
 # 		Variables
 ########################################################
 
-ONDEWO_SIP_VERSION = 4.0.0
+ONDEWO_SIP_VERSION=5.1.0
 
-SIP_API_GIT_BRANCH=tags/4.0.0
-ONDEWO_PROTO_COMPILER_GIT_BRANCH=tags/4.6.0
+SIP_API_GIT_BRANCH=tags/5.1.0
+ONDEWO_PROTO_COMPILER_GIT_BRANCH=tags/4.7.0
 ONDEWO_PROTO_COMPILER_DIR=ondewo-proto-compiler
 SIP_APIS_DIR=src/ondewo-sip-api
 SIP_PROTOS_DIR=${SIP_APIS_DIR}/ondewo
@@ -84,12 +84,10 @@ check_build: #Checks if all built proto-code is there
 	do \
 		find api -iname "*pb*" | grep -q $${file}; \
 		if test $$? != 0; then  echo "No Proto-Code for $${file} in api" & exit 1;fi; \
-		find esm2020 -iname "*pb*" | grep -q $${file}; \
-		if test $$? != 0; then  echo "No Proto-Code for $${file} in esm2020" & exit 1;fi; \
-		find fesm2015 -iname "*ondewo-sip-client-angular*" | wc -l | grep -q "2"; \
-		if test $$? != 0; then  echo "No Proto-Code for $${file} in fesm2015" & exit 1;fi; \
-		find fesm2020 -iname "*ondewo-sip-client-angular*" | wc -l | grep -q "2"; \
-		if test $$? != 0; then  echo "No Proto-Code for $${file} in fesm2020" & exit 1;fi; \
+		find esm2022 -iname "*pb*" | grep -q $${file}; \
+		if test $$? != 0; then  echo "No Proto-Code for $${file} in esm2022" & exit 1;fi; \
+		find fesm2022 -iname "*ondewo-sip-client-angular*" | wc -l | grep -q "2"; \
+		if test $$? != 0; then  echo "No Proto-Code for $${file} in fesm2022" & exit 1;fi; \
 	done
 	@rm -rf build_check.txt
 	@rm -rf build_check_temp.txt
@@ -199,7 +197,6 @@ spc: ## Checks if the Release Branch, Tag and Pypi version already exist
 	@if test "$(filtered_branches)" != ""; then echo "-- Test 1: Branch exists!!" & exit 1; else echo "-- Test 1: Branch is fine";fi
 	@if test "$(filtered_tags)" != ""; then echo "-- Test 2: Tag exists!!" & exit 1; else echo "-- Test 2: Tag is fine";fi
 
-
 ########################################################
 # Build
 
@@ -225,10 +222,10 @@ check_out_correct_submodule_versions: ## Fetches all Submodules and checksout sp
 	git submodule update --init --recursive
 	git -C ${SIP_APIS_DIR} fetch --all
 	git -C ${SIP_APIS_DIR} checkout ${SIP_API_GIT_BRANCH}
-	git -C ${SIP_APIS_DIR} pull
+	-git -C ${SIP_APIS_DIR} pull
 	git -C ${ONDEWO_PROTO_COMPILER_DIR} fetch --all
 	git -C ${ONDEWO_PROTO_COMPILER_DIR} checkout ${ONDEWO_PROTO_COMPILER_GIT_BRANCH}
-	git -C ${ONDEWO_PROTO_COMPILER_DIR} pull
+	-git -C ${ONDEWO_PROTO_COMPILER_DIR} pull
 	@echo "DONE checking out correct submodule versions."
 
 npm_run_build: ## Runs the build command in package.json

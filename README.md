@@ -28,6 +28,7 @@
 
 ONDEWO APIs use [Protocol Buffers](https://github.com/google/protobuf) version 3 (proto3) as their Interface Definition Language (IDL) to define the API interface and the structure of the payload messages. The same interface definition is used for gRPC versions of the API in all languages.
 
+
 ## Setup
 
 Using NPM:
@@ -54,7 +55,7 @@ npm
 │           ├── sip.pbconf.d.ts
 │           ├── sip.pb.d.ts
 │           └── sip.pbsc.d.ts
-├── esm2020
+├── esm2022
 │   ├── api
 │   │   └── ondewo
 │   │       └── sip
@@ -63,10 +64,7 @@ npm
 │   │           └── sip.pbsc.mjs
 │   ├── ondewo-sip-client-angular.mjs
 │   └── public-api.mjs
-├── fesm2015
-│   ├── ondewo-sip-client-angular.mjs
-│   └── ondewo-sip-client-angular.mjs.map
-├── fesm2020
+├── fesm2022
 │   ├── ondewo-sip-client-angular.mjs
 │   └── ondewo-sip-client-angular.mjs.map
 ├── ondewo-sip-api
