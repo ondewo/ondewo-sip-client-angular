@@ -5,3 +5,5 @@ ondewo-sip-api/*
 .vscode/
 node_modules
 ondewo-devops-accounts
+build_check.txt
+build_check_temp.txt
