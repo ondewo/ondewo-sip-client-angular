@@ -1,9 +1,15 @@
-.idea
+# release automation
+ondewo-devops-accounts
+build_check.*
+build_check.txt
+build_check_temp.txt
+
 npm
-ondewo-sip-api/*
 .idea/
 .vscode/
 node_modules
-ondewo-devops-accounts
-build_check.txt
-build_check_temp.txt
+
+ondewo-sip-api/*
+
+.isort.cfg
+grpc_cert

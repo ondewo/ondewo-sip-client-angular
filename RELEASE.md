@@ -1,9 +1,11 @@
 # Release History
+
 ***************** 
 ## Release ONDEWO SIP Angular Client 5.1.0 
  
 ### Improvements 
- * Tracking API Version [4.0.0](https://github.com/ondewo/ondewo-sip-api/releases/tag/4.0.0) ( [Documentation](https://ondewo.github.io/ondewo-sip-api/) ) 
+ * Tracking API Version [5.1.0](https://github.com/ondewo/ondewo-sip-api/releases/tag/5.1.0) ( [Documentation](https://ondewo.github.io/ondewo-sip-api/) ) 
+
 
 ***************** 
 ## Release ONDEWO SIP Angular Client 4.0.0 
@@ -11,8 +13,8 @@
 ### Improvements 
  * Tracking API Version [4.0.0](https://github.com/ondewo/ondewo-sip-api/releases/tag/4.0.0) ( [Documentation](https://ondewo.github.io/ondewo-sip-api/) ) 
 
-*****************
 
+***************** 
 ## Release ONDEWO SIP Angular Client 3.1.0
 
 * Track version 3.1.0 of [ONDEWO SIP API](https://github.com/ondewo/ondewo-sip-api/releases/3.1.0)

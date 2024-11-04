@@ -1,7 +1,16 @@
+.idea/
+.vscode/
+api/
+esm2022/
+fesm2022/
+node_modules
+npm
 RELEASE.md
 src/
-ondewo-proto-compiler
-ondewo-sip-api
-npm
-.vscode
 
+ondewo-proto-compiler
+
+ondewo-sip-api
+ondewo-sip-client-angular.d.ts
+ondewo-sip-client-angular.d.ts.map
+ondewo-sip-client-angular.metadata.json
