@@ -106,7 +106,7 @@ release: ## Create Github and NPM Release
 	make run_precommit_hooks
 	git status
 	git add api
-	# git add esm2022
+	-git add esm2022
 	git add fesm2022
 	git add src
 	git add README.md
