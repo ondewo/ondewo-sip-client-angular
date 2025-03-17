@@ -18,7 +18,7 @@ export
 ONDEWO_SIP_VERSION = 5.2.0
 
 SIP_API_GIT_BRANCH=tags/5.2.0
-ONDEWO_PROTO_COMPILER_GIT_BRANCH=tags/5.2.0
+ONDEWO_PROTO_COMPILER_GIT_BRANCH=tags/5.3.0
 ONDEWO_PROTO_COMPILER_DIR=ondewo-proto-compiler
 SIP_APIS_DIR=src/ondewo-sip-api
 SIP_PROTOS_DIR=${SIP_APIS_DIR}/ondewo
@@ -83,8 +83,8 @@ check_build: ## Checks if all built proto-code is there
 	do \
 		find api -iname "*pb*" | grep -q $${file}; \
 		if test $$? != 0; then  echo "No Proto-Code for $${file} in api" & exit 1;fi; \
-		find esm2022 -iname "*pb*" | grep -q $${file}; \
-		if test $$? != 0; then  echo "No Proto-Code for $${file} in esm2022" & exit 1;fi; \
+		# find esm2022 -iname "*pb*" | grep -q $${file}; \
+		# if test $$? != 0; then  echo "No Proto-Code for $${file} in esm2022" & exit 1;fi; \
 		find fesm2022 -iname "*ondewo-sip-client-angular*" | wc -l | grep -q "2"; \
 		if test $$? != 0; then  echo "No Proto-Code for $${file} in fesm2022" & exit 1;fi; \
 	done
@@ -106,7 +106,7 @@ release: ## Create Github and NPM Release
 	make run_precommit_hooks
 	git status
 	git add api
-	git add esm2022
+	# git add esm2022
 	git add fesm2022
 	git add src
 	git add README.md
