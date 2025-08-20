@@ -27,8 +27,8 @@
     "directory": "https://github.com/ondewo/ondewo-sip-client-angular"
   },
   "peerDependencies": {
-    "@angular/common": ">=19.2.14 <20.0.0",
-    "@angular/core": ">=19.2.14 <20.0.0",
+    "@angular/common": ">=20.1.7 <21.0.0",
+    "@angular/core": ">=20.1.7 <21.0.0",
     "@ngx-grpc/common": ">=3.1.2",
     "@ngx-grpc/core": ">=3.1.2"
   },
@@ -36,7 +36,7 @@
     "@typescript-eslint/eslint-plugin": "^8.12.2",
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.13.0",
-    "eslint": "^9.27.0",
+    "eslint": "^9.33.0",
     "global": "^4.4.0",
     "husky": "^9.1.6",
     "prettier": "^3.3.3"
