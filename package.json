@@ -1,6 +1,6 @@
 {
 	"name": "@ondewo/sip-client-angular",
-	"version": "5.2.0",
+	"version": "5.3.0",
 	"description": "ONDEWO Session Initiation Protocol (SIP) Client library for Angular",
 	"author": "ONDEWO GmbH <office@ondewo.com>",
 	"homepage": "https://ondewo.com",
@@ -18,8 +18,8 @@
 		"directory": "https://github.com/ondewo/ondewo-sip-client-angular"
 	},
 	"peerDependencies": {
-		"@angular/common": ">=18.2.8",
-		"@angular/core": ">=18.2.8",
+		"@angular/common": ">=20.1.7 <21.0.0",
+		"@angular/core": ">=20.1.7 <21.0.0",
 		"@ngx-grpc/common": ">=3.1.2",
 		"@ngx-grpc/core": ">=3.1.2"
 	},
@@ -31,8 +31,6 @@
 		},
 		".": {
 			"types": "./index.d.ts",
-			"esm2022": "./esm2022/ondewo-sip-client-angular.mjs",
-			"esm": "./esm2022/ondewo-sip-client-angular.mjs",
 			"default": "./fesm2022/ondewo-sip-client-angular.mjs"
 		}
 	},
@@ -41,12 +39,12 @@
 		"tslib": "^2.3.0"
 	},
 	"devDependencies": {
-		"@eslint/eslintrc": "^3.2.0",
-		"@eslint/js": "^9.15.0",
-		"@typescript-eslint/eslint-plugin": "^8.15.0",
-		"eslint": "^9.15.0",
+		"@eslint/eslintrc": "^3.3.1",
+		"@eslint/js": "^9.36.0",
+		"@typescript-eslint/eslint-plugin": "^8.45.0",
+		"eslint": "^9.36.0",
 		"global": "^4.4.0",
 		"husky": "^9.1.7",
-		"prettier": "^3.3.3"
+		"prettier": "^3.6.2"
 	}
 }
