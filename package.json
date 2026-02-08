@@ -1,50 +1,41 @@
 {
-	"name": "@ondewo/sip-client-angular",
-	"version": "5.3.0",
-	"description": "ONDEWO Session Initiation Protocol (SIP) Client library for Angular",
-	"author": "ONDEWO GmbH <office@ondewo.com>",
-	"homepage": "https://ondewo.com",
-	"license": "Apache-2.0",
-	"keywords": [
-		"ondewo",
-		"sip",
-		"api",
-		"client",
-		"ngx-grpc",
-		"grpc"
-	],
-	"repository": {
-		"type": "git",
-		"directory": "https://github.com/ondewo/ondewo-sip-client-angular"
-	},
-	"peerDependencies": {
-		"@angular/common": ">=20.1.7 <21.0.0",
-		"@angular/core": ">=20.1.7 <21.0.0",
-		"@ngx-grpc/common": ">=3.1.2",
-		"@ngx-grpc/core": ">=3.1.2"
-	},
-	"module": "fesm2022/ondewo-sip-client-angular.mjs",
-	"typings": "index.d.ts",
-	"exports": {
-		"./package.json": {
-			"default": "./package.json"
-		},
-		".": {
-			"types": "./index.d.ts",
-			"default": "./fesm2022/ondewo-sip-client-angular.mjs"
-		}
-	},
-	"sideEffects": false,
-	"dependencies": {
-		"tslib": "^2.3.0"
-	},
-	"devDependencies": {
-		"@eslint/eslintrc": "^3.3.1",
-		"@eslint/js": "^9.36.0",
-		"@typescript-eslint/eslint-plugin": "^8.45.0",
-		"eslint": "^9.36.0",
-		"global": "^4.4.0",
-		"husky": "^9.1.7",
-		"prettier": "^3.6.2"
-	}
+  "name": "@ondewo/sip-client-angular",
+  "version": "5.3.0",
+  "description": "ONDEWO Session Initiation Protocol (SIP) Client library for Angular",
+  "author": "ONDEWO GmbH <office@ondewo.com>",
+  "homepage": "https://ondewo.com",
+  "license": "Apache-2.0",
+  "keywords": [
+    "ondewo",
+    "sip",
+    "api",
+    "client",
+    "ngx-grpc",
+    "grpc"
+  ],
+  "repository": {
+    "type": "git",
+    "directory": "https://github.com/ondewo/ondewo-sip-client-angular"
+  },
+  "peerDependencies": {
+    "@angular/common": ">=21.0.0 <22.0.0",
+    "@angular/core": ">=21.0.0 <22.0.0",
+    "@ngx-grpc/common": ">=5.0.0",
+    "@ngx-grpc/core": ">=5.0.0"
+  },
+  "module": "fesm2022/ondewo-sip-client-angular.mjs",
+  "typings": "types/ondewo-sip-client-angular.d.ts",
+  "exports": {
+    "./package.json": {
+      "default": "./package.json"
+    },
+    ".": {
+      "types": "./types/ondewo-sip-client-angular.d.ts",
+      "default": "./fesm2022/ondewo-sip-client-angular.mjs"
+    }
+  },
+  "sideEffects": false,
+  "dependencies": {
+    "tslib": "^2.3.0"
+  }
 }
