@@ -18,7 +18,7 @@ export
 ONDEWO_SIP_VERSION = 5.3.0
 
 SIP_API_GIT_BRANCH=tags/5.3.0
-ONDEWO_PROTO_COMPILER_GIT_BRANCH=tags/5.7.0
+ONDEWO_PROTO_COMPILER_GIT_BRANCH=tags/5.9.0
 ONDEWO_PROTO_COMPILER_DIR=ondewo-proto-compiler
 SIP_APIS_DIR=src/ondewo-sip-api
 SIP_PROTOS_DIR=${SIP_APIS_DIR}/ondewo
@@ -218,14 +218,26 @@ build: check_out_correct_submodule_versions build_compiler update_package npm_ru
 	make install_dependencies
 
 install_dependencies:
-	npm i --save-dev \
+	@for pkg in \
+		typescript \
+		eslint \
 		@eslint/eslintrc \
 		@eslint/js \
+		@typescript-eslint/typescript-estree \
 		@typescript-eslint/eslint-plugin \
-		eslint \
+		@typescript-eslint/parser \
 		global \
 		husky \
-		prettier
+		prettier; \
+	do \
+		if npm ls "$$pkg" --depth=0 >/dev/null 2>&1; then \
+			echo "Already installed: $$pkg — skipping"; \
+		else \
+			echo "Installing: $$pkg"; \
+			npm i --save-dev --prefer-offline --legacy-peer-deps "$$pkg" || exit 1; \
+		fi; \
+	done; \
+	echo "All dependencies installed."
 
 check_out_correct_submodule_versions: ## Fetches all Submodules and checks out specified branch
 	@echo "START checking out correct submodule versions ..."
