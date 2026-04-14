@@ -234,7 +234,7 @@ install_dependencies:
 			echo "Already installed: $$pkg — skipping"; \
 		else \
 			echo "Installing: $$pkg"; \
-			npm i --save-dev --prefer-offline --legacy-peer-deps "$$pkg" || exit 1; \
+			npm i --save-dev --legacy-peer-deps "$$pkg" || exit 1; \
 		fi; \
 	done; \
 	echo "All dependencies installed."
