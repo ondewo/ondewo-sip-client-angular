@@ -1,7 +1,8 @@
 import { EnvironmentProviders, Provider } from "@angular/core";
 import { GRPC_INTERCEPTORS } from "@ngx-grpc/core";
 import { AuthGrpcInterceptor } from "./auth-grpc.interceptor";
-import { provideOndewoSipAuth } from "./auth.providers";
+import { provideKeycloakTokenProvider, provideOndewoSipAuth } from "./auth.providers";
+import { KEYCLOAK_TOKEN_PROVIDER_CONFIG, KeycloakTokenProviderConfig } from "./keycloak-token-provider";
 import { TOKEN_PROVIDER, TokenProvider, TokenResult } from "./token-provider";
 
 /** A concrete `TokenProvider` the consumer would register. */
@@ -67,5 +68,25 @@ describe("provideOndewoSipAuth", () => {
       useClass: AuthGrpcInterceptor,
       multi: true
     });
+  });
+});
+
+/**
+ * Unit tests for {@link provideKeycloakTokenProvider}, the DI helper that binds the
+ * built-in provider's configuration under {@link KEYCLOAK_TOKEN_PROVIDER_CONFIG}.
+ */
+describe("provideKeycloakTokenProvider", () => {
+  /** A representative config the consumer would pass. */
+  const config: KeycloakTokenProviderConfig = {
+    keycloakUrl: "https://auth.example.com/auth",
+    realm: "ondewo-ccai-platform",
+    clientId: "ondewo-nlu-cai-sdk-public",
+    refreshToken: "offline-token"
+  };
+
+  /** The config is bound to `KEYCLOAK_TOKEN_PROVIDER_CONFIG` via `useValue`. */
+  it("binds the config under KEYCLOAK_TOKEN_PROVIDER_CONFIG via useValue", (): void => {
+    const providers: Provider[] = flatten(provideKeycloakTokenProvider(config));
+    expect(providers).toContainEqual({ provide: KEYCLOAK_TOKEN_PROVIDER_CONFIG, useValue: config });
   });
 });

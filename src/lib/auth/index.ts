@@ -16,4 +16,12 @@ export {
 } from "./resolve-token";
 export { authHttpInterceptor } from "./auth-http.interceptor";
 export { AuthGrpcInterceptor } from "./auth-grpc.interceptor";
-export { provideOndewoSipAuth } from "./auth.providers";
+export { provideKeycloakTokenProvider, provideOndewoSipAuth } from "./auth.providers";
+export {
+  KEYCLOAK_TOKEN_PROVIDER_CONFIG,
+  KeycloakAuthenticationError,
+  KeycloakTokenProvider,
+  KeycloakTokenProviderConfig,
+  MIN_REFRESH_DELAY_IN_S,
+  REFRESH_SKEW_IN_S
+} from "./keycloak-token-provider";
