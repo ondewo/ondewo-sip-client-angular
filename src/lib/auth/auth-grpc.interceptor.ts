@@ -31,7 +31,12 @@ import { TOKEN_PROVIDER, TokenProvider } from "./token-provider";
  */
 @Injectable()
 export class AuthGrpcInterceptor implements GrpcInterceptor {
-  constructor(@Inject(TOKEN_PROVIDER) private readonly tokenProvider: TokenProvider) {}
+  /**
+   * @param tokenProvider the application-supplied {@link TokenProvider}, injected
+   *   under the {@link TOKEN_PROVIDER} DI token, that yields the current access
+   *   token.
+   */
+  public constructor(@Inject(TOKEN_PROVIDER) private readonly tokenProvider: TokenProvider) {}
 
   /**
    * Attach the bearer credential (when available) to the request metadata, then

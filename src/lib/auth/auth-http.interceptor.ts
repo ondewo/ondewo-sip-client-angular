@@ -46,7 +46,7 @@ export function authHttpInterceptor(
       if (bearerValue === null) {
         return next(req);
       }
-      const authorizedRequest = req.clone({
+      const authorizedRequest: HttpRequest<unknown> = req.clone({
         setHeaders: { [AUTHORIZATION_HEADER]: bearerValue }
       });
       return next(authorizedRequest);

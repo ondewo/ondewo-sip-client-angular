@@ -1,4 +1,4 @@
-import { from, isObservable, Observable, of, Subscriber } from "rxjs";
+import { from, isObservable, Observable, of, Subscriber, Subscription } from "rxjs";
 import { TokenResult } from "./token-provider";
 
 /**
@@ -7,10 +7,10 @@ import { TokenResult } from "./token-provider";
  * Lower-case on purpose: gRPC-web metadata keys are case-insensitive but are
  * conventionally lower-cased, and HTTP/2 requires lower-case header names.
  */
-export const AUTHORIZATION_HEADER = "authorization";
+export const AUTHORIZATION_HEADER: string = "authorization";
 
 /** The credential scheme prefix prepended to the raw access token. */
-export const BEARER_PREFIX = "Bearer ";
+export const BEARER_PREFIX: string = "Bearer ";
 
 /**
  * Normalize the value returned by a `TokenProvider.getToken()` call — which may
@@ -30,7 +30,7 @@ export function resolveToken(result: TokenResult): Observable<string | null> {
     : from(Promise.resolve(result));
 
   return new Observable<string | null>((subscriber: Subscriber<string | null>): (() => void) => {
-    const subscription = source.subscribe({
+    const subscription: Subscription = source.subscribe({
       next: (token: string | null): void => subscriber.next(normalizeToken(token)),
       error: (caughtError: unknown): void => subscriber.error(caughtError),
       complete: (): void => subscriber.complete()
@@ -59,7 +59,7 @@ export function buildBearerValue(token: string | null): string | null {
  */
 export function resolveBearerValue(result: TokenResult): Observable<string | null> {
   return new Observable<string | null>((subscriber: Subscriber<string | null>): (() => void) => {
-    const subscription = resolveToken(result).subscribe({
+    const subscription: Subscription = resolveToken(result).subscribe({
       next: (token: string | null): void => subscriber.next(buildBearerValue(token)),
       error: (caughtError: unknown): void => subscriber.error(caughtError),
       complete: (): void => subscriber.complete()
@@ -78,7 +78,7 @@ function normalizeToken(token: string | null | undefined): string | null {
   if (token === null || token === undefined) {
     return null;
   }
-  const trimmed = token.trim();
+  const trimmed: string = token.trim();
   return trimmed.length === 0 ? null : trimmed;
 }
 
