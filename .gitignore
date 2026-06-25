@@ -8,6 +8,7 @@ npm
 .idea/
 .vscode/
 node_modules
+coverage
 
 ondewo-sip-api/*
 
