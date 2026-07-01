@@ -10,7 +10,7 @@ const GENERATED_STUB_PATTERNS = [
 module.exports = {
 	preset: "jest-preset-angular",
 	setupFilesAfterEnv: ["<rootDir>/setup-jest.ts"],
-	roots: ["<rootDir>/src/lib/auth"],
+	roots: ["<rootDir>/src/lib/auth", "<rootDir>/src/lib/examples"],
 	testMatch: ["**/*.spec.ts"],
 	moduleFileExtensions: ["ts", "html", "js", "json", "mjs"],
 	collectCoverage: true,
