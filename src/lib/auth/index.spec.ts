@@ -17,7 +17,7 @@ describe("auth public API barrel", () => {
     expect(typeof authApi.resolveToken).toBe("function");
     expect(typeof authApi.resolveBearerValue).toBe("function");
     expect(typeof authApi.buildBearerValue).toBe("function");
-    expect(authApi.AUTHORIZATION_HEADER).toBe("authorization");
+    expect(authApi.AUTHORIZATION_HEADER).toBe("Authorization");
     expect(authApi.BEARER_PREFIX).toBe("Bearer ");
     expect(authApi.TOKEN_PROVIDER).toBeDefined();
     expect(authApi.KEYCLOAK_TOKEN_PROVIDER_CONFIG).toBeDefined();

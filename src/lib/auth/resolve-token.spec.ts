@@ -16,9 +16,9 @@ const TOKEN: string = "eyJhbGciOi.payload.signature";
  * (re-exported from the barrel) so their exact values are contract, not detail.
  */
 describe("constants", () => {
-  /** The header name must be the lower-cased `authorization` (HTTP/2 + gRPC-web metadata convention). */
-  it("uses a lower-case authorization header name", (): void => {
-    expect(AUTHORIZATION_HEADER).toBe("authorization");
+  /** The header name must be the canonical capitalized `Authorization` key used across the ONDEWO SDKs. */
+  it("uses the canonical Authorization header name", (): void => {
+    expect(AUTHORIZATION_HEADER).toBe("Authorization");
   });
 
   /** The scheme prefix must be exactly `Bearer ` (note the trailing space) so it concatenates cleanly with a token. */
