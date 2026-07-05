@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-      - "OND211-**"
+      - 'OND211-**'
   pull_request:
     branches:
       - master
@@ -23,7 +23,7 @@ jobs:
       - name: Set up Node.js 20
         uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          node-version: '20'
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund --legacy-peer-deps
