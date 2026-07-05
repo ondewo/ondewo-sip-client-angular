@@ -550,4 +550,53 @@ describe("KeycloakTokenProvider", () => {
     provider.ngOnDestroy();
     httpController.verify();
   });
+
+  describe("keycloakVerifySsl (browser no-op, config -> provider parity)", () => {
+    /** Omitting the field defaults the stored flag to verification-ON (secure). */
+    it("defaults the stored flag to true when keycloakVerifySsl is omitted", (): void => {
+      const { provider, httpController } = setup(offlineConfig());
+      expect(provider.keycloakVerifySsl).toBe(true);
+      httpController.verify();
+    });
+
+    /** An explicit true is stored as true. */
+    it("stores an explicit keycloakVerifySsl: true as true", (): void => {
+      const { provider, httpController } = setup(offlineConfig({ keycloakVerifySsl: true }));
+      expect(provider.keycloakVerifySsl).toBe(true);
+      httpController.verify();
+    });
+
+    /** An explicit false is threaded from config through to the provider field. */
+    it("stores keycloakVerifySsl: false as false (threaded config -> provider)", (): void => {
+      const { provider, httpController } = setup(offlineConfig({ keycloakVerifySsl: false }));
+      expect(provider.keycloakVerifySsl).toBe(false);
+      httpController.verify();
+    });
+
+    /**
+     * The flag is inert at the transport layer: with keycloakVerifySsl: false the
+     * provider issues the SAME single POST (same URL, method, headers, body) and
+     * logs in exactly as with the field omitted — proving it is a no-op, not wired
+     * to TLS.
+     */
+    it("does not alter or break the token request when keycloakVerifySsl is false", async (): Promise<void> => {
+      const { provider, httpController } = setup(offlineConfig({ keycloakVerifySsl: false }));
+
+      const tokenPromise: Promise<string | null> = asPromise(provider.getToken());
+      const request: TestRequest = httpController.expectOne(TOKEN_ENDPOINT);
+
+      expect(request.request.method).toBe("POST");
+      expect(request.request.headers.get("Content-Type")).toBe("application/x-www-form-urlencoded");
+      const params: URLSearchParams = new URLSearchParams(request.request.body as string);
+      expect(params.get("grant_type")).toBe("refresh_token");
+      expect(params.get("client_id")).toBe(CLIENT_ID);
+      expect(params.get("refresh_token")).toBe(OFFLINE_TOKEN);
+
+      request.flush({ access_token: ACCESS_1, refresh_token: OFFLINE_TOKEN, expires_in: EXPIRES_IN_S });
+      expect(await tokenPromise).toBe(ACCESS_1);
+
+      provider.ngOnDestroy();
+      httpController.verify();
+    });
+  });
 });
