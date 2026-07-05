@@ -363,7 +363,7 @@ describe("KeycloakTokenProvider", () => {
 
     await expect(asPromise(provider.getToken())).rejects.toMatchObject({
       name: "KeycloakAuthenticationError",
-      message: expect.stringContaining("network down") as unknown as string
+      message: expect.stringContaining("network down")
     });
 
     provider.ngOnDestroy();
@@ -386,7 +386,7 @@ describe("KeycloakTokenProvider", () => {
     const provider: KeycloakTokenProvider = TestBed.inject(KeycloakTokenProvider);
 
     await expect(asPromise(provider.getToken())).rejects.toMatchObject({
-      message: expect.stringContaining("plain-string-failure") as unknown as string
+      message: expect.stringContaining("plain-string-failure")
     });
 
     provider.ngOnDestroy();
