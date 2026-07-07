@@ -14,3 +14,9 @@ ondewo-sip-api
 ondewo-sip-client-angular.d.ts
 ondewo-sip-client-angular.d.ts.map
 ondewo-sip-client-angular.metadata.json
+package-lock.json
+package.json
+npm/
+dist/
+.test-build/
+.test-build-examples/
