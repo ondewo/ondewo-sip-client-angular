@@ -90,3 +90,16 @@ clarifying questions come before implementation rather than after mistakes.
 - Use context managers for files, sockets, and thread pools.
 - Prefer region comments for grouping methods in files that already use them.
 - End edited Markdown and YAML files with a trailing newline.
+
+## Release gotchas (hard-won this session)
+
+These bit us during the 6.14.0 release. Keep them in mind when releasing.
+
+- **Trust the registry, not the log.** `make release_all_clients` wraps each client in `|| echo "Already released …"`, so a *failed* release is reported as "done". After any release, verify the GitHub release **and** the published package (PyPI / npm) directly.
+- **`npm install failed after 5 attempts` in a release log is usually a red herring** — that text is the echo *inside* the docker `RUN for i in 1..5; do npm install …` retry loop, not a real failure (`npm install` succeeds → `#10 DONE`). Look further down for the real error (a TTY error, an eslint failure, a `setup.py` error).
+- **Codegen must run TTY-free.** The `docker run` that invokes the proto-compiler must not pass `-it` — non-interactively it fails with `cannot attach stdin to a TTY-enabled container because stdin is not a terminal`. Fix the script (drop `-it`), or run the whole release under a pseudo-TTY: `script -qc 'make …' /dev/null`.
+- **Release Makefiles print secrets.** Some `docker run … -e <TOKEN>=…` recipe lines lack a leading `@`, so `make` echoes the expanded token. Rotate any token printed during a release; fix by prefixing the recipe line with `@`.
+- The release auto-pulls the **latest** `ondewo-proto-compiler` tag.
+- **npm package names are inconsistent** — e.g. the JS client publishes as `@ondewo/ondewo-nlu-client-js` (double `ondewo`), not `@ondewo/nlu-client-js`. Check `src/package.json`'s `name` before querying npm.
+- **The release runs type-checked `eslint`; CI does not.** Angular CI runs only `jest`, so `eslint` (`plugin:@typescript-eslint/recommended-requiring-type-checking`) failures surface only at release time. The type-aware rules need `rxjs`/`@angular`/`@ngx-grpc` resolvable, so `install_dependencies` must do a real `npm install --include=dev` — the release runs under `NODE_ENV=production` (which otherwise drops devDeps) and the build minimizes root `package.json`, so `git checkout -- package.json package-lock.json` **before** installing. Hand-written code must satisfy the rules: explicit `public`/`private` on constructors, `typedef` on exported consts, no unnecessary type assertions.
+- **`generate` must not use `docker run -it`** (see the TTY point above); keep `-it` only on interactive `--entrypoint /bin/bash` debug commands.
