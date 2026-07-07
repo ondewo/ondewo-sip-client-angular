@@ -218,6 +218,8 @@ build: check_out_correct_submodule_versions build_compiler update_package npm_ru
 	make install_dependencies
 
 install_dependencies:
+	git checkout -- package.json package-lock.json 2>/dev/null || true
+	rm -rf node_modules && npm install --include=dev --legacy-peer-deps
 	@for pkg in \
 		typescript \
 		eslint \

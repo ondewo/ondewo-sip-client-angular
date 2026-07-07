@@ -16,8 +16,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npm run generate",
-    "generate": "docker run -it -v ${PWD}:/input-volume -v ${PWD}/..:/output-volume ondewo-angular-proto-compiler ondewo-sip-api ondewo",
-    "debug": "docker run -it --entrypoint /bin/bash -v ${PWD}:/input-volume -v ${PWD}/..:/output-volume ondewo-angular-proto-compiler",
+    "generate": "docker run -v ${PWD}:/input-volume -v ${PWD}/..:/output-volume ondewo-angular-proto-compiler ondewo-sip-api ondewo",
+    "debug": "docker run --entrypoint /bin/bash -v ${PWD}:/input-volume -v ${PWD}/..:/output-volume ondewo-angular-proto-compiler",
     "publish-npm": "npm publish ../npm --access public",
     "test-in-ondewo-aim": "npm run build && rm -rf ../../ondewo-aim/node_modules/@ondewo/sip-client-angular/* && cp ../npm/* ../../ondewo-aim/node_modules/@ondewo/sip-client-angular/. -R",
     "test-in-ondewo-aim-copy-only": "rm -rf ../../ondewo-aim/node_modules/@ondewo/sip-client-angular/* && cp ../npm/* ../../ondewo-aim/node_modules/@ondewo/sip-client-angular/. -R"
