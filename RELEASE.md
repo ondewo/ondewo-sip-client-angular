@@ -1,6 +1,17 @@
 # Release History
 
 ***************** 
+## Release ONDEWO SIP Angular Client 5.4.1 
+ 
+### Bug Fixes 
+ * GitHub release notes are no longer empty: the root RELEASE.md, which the release body is read from, is now kept in sync with src/RELEASE.md, which the release notes are written into. 
+ * The husky pre-commit hook no longer aborts an automated release by invoking pre-commit in a repo that ships no .pre-commit-config.yaml. 
+ 
+### Improvements 
+ * Tracking API Version [5.4.0](https://github.com/ondewo/ondewo-sip-api/releases/tag/5.4.0) ( [Documentation](https://ondewo.github.io/ondewo-sip-api/) ) 
+
+
+***************** 
 ## Release ONDEWO SIP Angular Client 5.4.0 
  
 ### Improvements 
