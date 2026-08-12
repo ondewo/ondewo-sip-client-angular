@@ -104,6 +104,10 @@ release: ## Create Github and NPM Release
 	make build
 	make check_build
 	make run_precommit_hooks
+# CURRENT_RELEASE_NOTES (the GitHub release body) reads the root RELEASE.md, but the
+# API repo injects the new section into src/RELEASE.md — keep them in sync, the same
+# way the js / nodejs / typescript clients do.
+	cp src/RELEASE.md .
 	git status
 	git add api
 	-git add esm2022
