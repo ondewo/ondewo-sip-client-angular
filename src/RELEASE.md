@@ -2,6 +2,20 @@
 
 *****************
 
+## Release ONDEWO SIP Angular Client 5.4.3
+
+### Bug Fixes
+
+* [[OND221-2830]](https://ondewo.atlassian.net/browse/OND221-2830) The hand-written auth surface moved from `src/lib/auth` to `src/auth`. `lib` is ng-packagr's `dest` (declared in the proto compiler's `ng-package.json`) and ng-packagr deletes `dest` before tsc compiles the entry point, so hand-written sources kept under it were gone by the time the generated public-api barrel re-exported them and the library build died with `error TS2307: Cannot find module './lib/auth'`. `src/auth` is also the first location the compiler's `generate-public-api.sh` looks in, and the layout `ondewo-nlu-client-angular` already builds green with.
+* [[OND221-2830]](https://ondewo.atlassian.net/browse/OND221-2830) The Makefile now pins [ondewo-proto-compiler 5.13.0](https://github.com/ondewo/ondewo-proto-compiler/releases/tag/5.13.0), the version that re-exports the hand-written auth barrel from the generated public-api. 5.4.2 announced that re-export but was built with the 5.11.0 the Makefile still pinned - which emits no such export - so no `AuthGrpcInterceptor`, `KeycloakTokenProvider`, `provideOndewoSipAuth` or `authHttpInterceptor` symbol reached the published package.
+
+### Improvements
+
+* [[OND221-2830]](https://ondewo.atlassian.net/browse/OND221-2830) A jest guard (`src/auth/ng-packagr-dest.spec.ts`) reads `dest` out of the ng-package.json the build itself uses and fails when the hand-written barrel sits inside it, so the deletion trap cannot be re-armed by a later move. CI checks out submodules so the guard can read that configuration instead of a hard-coded directory name.
+* Tracking API Version [5.4.0](https://github.com/ondewo/ondewo-sip-api/releases/tag/5.4.0) ( [Documentation](https://ondewo.github.io/ondewo-sip-api/) )
+
+*****************
+
 ## Release ONDEWO SIP Angular Client 5.4.2
 
 ### Bug Fixes

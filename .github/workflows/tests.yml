@@ -18,7 +18,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
         with:
-          submodules: false
+          # The ng-packagr layout guard reads "dest" out of the proto compiler's own
+          # ng-package.json, so the submodule holding it has to be on disk.
+          submodules: true
 
       - name: Set up Node.js 20
         uses: actions/setup-node@v5
