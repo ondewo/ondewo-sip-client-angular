@@ -110,6 +110,11 @@ release: ## Create Github and NPM Release
 	git status
 	git add api
 	git add fesm2022
+# The proto compiler rewrites public-api.ts and ng-packagr rewrites index.d.ts on every
+# build; index.d.ts is the package's "typings" entry point. Stage them so the tracked
+# copies keep describing what npm receives.
+	git add public-api.ts
+	git add index.d.ts
 	git add src
 	git add README.md
 	git add RELEASE.md
