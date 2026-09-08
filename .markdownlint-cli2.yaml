@@ -22,6 +22,12 @@ config:
 globs:
   - '*.md'
 ignores:
+  # LICENSE.md is a verbatim copy of the Apache-2.0 text and must not be reflowed:
+  # MD029 renumbers its clause headings "2."-"9." to "1." and MD034 wraps the
+  # apache.org URL in angle brackets, both of which alter the licence as published.
+  # A pre-commit-level `exclude:` cannot protect it - the `globs: ['*.md']` above is
+  # ADDED to the filenames pre-commit passes, so the file is linted either way.
+  - 'LICENSE.md'
   - 'node_modules/**'
   - 'api/**'
   - 'fesm2022/**'

@@ -1,0 +1,80 @@
+#############################################################################################
+# pre-commit — language-agnostic hooks for this non-python repo (Angular/TS SIP client).    #
+# Language-specific linting/formatting stays with the repo's own toolchain (eslint/prettier #
+# via husky, which chains `pre-commit run` after them). Ruff/mypy/uv are python-only and    #
+# NOT included here.                                                                         #
+#############################################################################################
+
+# Never touch generated / vendored code. Tuned for this repo:
+#   node_modules/ npm/ coverage/  installed deps and build/coverage output (gitignored)
+#   api/                          generated proto TS stubs (*.pb.ts / *.pbconf.ts / *.pbsc.ts)
+#   fesm2022/                     generated Angular build output (*.mjs / *.mjs.map)
+#   ondewo-proto-compiler/        git submodule
+#   src/ondewo-sip-api/           git submodule (proto api)
+#   index.d.ts / ondewo-sip-client-angular.* / *.d.ts.map   generated type declarations
+#   package-lock.json             npm lockfile
+# NOTE: src/auth/ is HAND-WRITTEN and stays in scope. It deliberately sits OUTSIDE src/lib,
+# which is ng-packagr's `dest` and is deleted on every build (src/auth/ng-packagr-dest.spec.ts).
+exclude: |
+  (?x)(
+      ^(node_modules|api|fesm2022)/
+      |^(ondewo-proto-compiler|src/ondewo-sip-api)(/|$)
+      |^(index\.d\.ts|ondewo-sip-client-angular\.d\.ts|ondewo-sip-client-angular\.metadata\.json|package-lock\.json)$
+      |(^|/)(node_modules|dist|build|npm|coverage|\.venv)/
+      |\.d\.ts\.map$
+      |(_pb\.(js|d\.ts)$|_pb2\.pyi?$|_pb2_grpc\.py$|_grpc_pb\.(js|d\.ts)$)
+  )
+
+fail_fast: false
+
+repos:
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.23.2
+    hooks:
+      # require_serial IS LOAD-BEARING, not a performance knob. `.markdownlint-cli2.yaml`
+      # declares `globs: ['*.md']`, so EVERY invocation additionally lints all root markdown
+      # on top of the filenames pre-commit hands it. Without require_serial pre-commit splits
+      # the file list across parallel processes, two of them fix-and-write README.md /
+      # RELEASE.md at the same time, and the interleaved writes silently corrupt the files
+      # (dropped changelog bullets and `## Release …` headings were observed in the sibling
+      # angular clients). MD053 must stay disabled in that config too — its autofix deletes
+      # the `[comment]: <> (START/END OF GITHUB README)` markers the release slices with.
+      - id: markdownlint-cli2
+        require_serial: true
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+        args: [maxkb=1024]
+      - id: check-json # validate (does NOT reformat) json/package.json
+      - id: check-yaml
+      - id: check-xml
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: detect-private-key
+      - id: check-executables-have-shebangs
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+
+  # conventional-pre-commit MUST stay declared BEFORE giticket. Both run at the commit-msg
+  # stage and pre-commit runs them in declaration order. giticket rewrites the subject to
+  # "[OND221-2830] feat: …", which is no longer valid Conventional Commits, so with giticket
+  # first EVERY commit on a ticket branch fails this hook and can only land with --no-verify.
+  # Validate first, decorate second.
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v4.4.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+
+  - repo: https://github.com/milin/giticket
+    rev: '1.92'
+    hooks:
+      - id: giticket
+        args:
+          [
+            '--regex=(?:(?:feature|bugfix|support|hotfix)/)?(OND[0-9]{3}-[0-9]{1,5})[_-][\w-]+',
+            '--format=[{ticket}] {commit_msg}',
+            '--mode=regex_match'
+          ]
