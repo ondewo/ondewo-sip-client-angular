@@ -68,7 +68,7 @@
 ### Improvements
 
 * Optimized for Angular 16 (esm2022 and fesm2022)
-* Tracking API Version [4.0.0](https://github.com/ondewo/ondewo-sip-api/releases/tag/5.1.0) ( [Documentation](https://ondewo.github.io/ondewo-sip-api/) )
+* Tracking API Version [4.0.0](https://github.com/ondewo/ondewo-sip-api/releases/tag/4.0.0) ( [Documentation](https://ondewo.github.io/ondewo-sip-api/) )
 
 *****************
 
