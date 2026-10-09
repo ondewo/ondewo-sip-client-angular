@@ -75,6 +75,113 @@ npm
 └── README.md
 ```
 
+## TLS, mutual TLS and certificates
+
+gRPC encrypts with **TLS**; in this library the transport is **gRPC-web** over the browser's `fetch`/XHR, so TLS
+means an `https://` endpoint (an Envoy or other gRPC-web proxy in front of the ONDEWO server). The **browser** owns
+the handshake: it verifies the server against its own (OS / browser) trust store, and it presents a client
+certificate only from its own certificate store. Application code can neither add a CA nor attach a client identity,
+so this package takes no certificate or key. `buildGrpcWebHost` builds the endpoint URL from the same `host` /
+`port` / `useSecureChannel` fields every ONDEWO SDK uses:
+
+| Mode | `useSecureChannel` | Where the certificates live |
+| --- | --- | --- |
+| Plaintext (not for production) | `false` | none; `http://`, logged with `console.warn` naming `host:port` |
+| TLS, public CA (system roots) | `true` (default) | nothing to do: the browser trusts the server certificate |
+| TLS, private / custom CA | `true` (default) | the CA (`ca.pem`) imported into the OS / browser trust store of every client machine |
+| Mutual TLS | `true` (default) | the proxy requests a client certificate; the browser offers one from the user's certificate store |
+
+For mutual TLS without certificates on the client machines, let the gRPC-web proxy (Envoy) terminate the browser's
+TLS and use mutual TLS on its upstream connection to the ONDEWO server.
+
+```ts
+import { GrpcCoreModule } from "@ngx-grpc/core";
+import { GrpcWebClientModule } from "@ngx-grpc/grpc-web-client";
+import { buildGrpcWebHost } from "@ondewo/sip-client-angular";
+
+@NgModule({
+  imports: [
+    GrpcCoreModule.forRoot(),
+    GrpcWebClientModule.forRoot({
+      settings: { host: buildGrpcWebHost({ host: "sip.example.com", port: 443 }) } // https://sip.example.com:443
+    })
+  ]
+})
+export class AppModule {}
+```
+
+Rules the code enforces (`GrpcWebEndpointError`, whose message names the field, never its value):
+
+- `useSecureChannel` defaults to `true` (`https://`). `false` gives `http://` and a `console.warn` naming `host:port`.
+- `grpcCert`, `grpcClientCert`, `grpcClientKey` (and the snake_case spellings of the other SDKs' configs) are
+  **refused** when non-empty, instead of being silently dropped: never ship a private key or certificate in a browser
+  bundle. Empty strings / `null` count as unset (plain TLS).
+- A bare IPv6 literal is bracketed (`::1` → `https://[::1]:8443`); a bracketed host is left alone. A host with a
+  scheme (`https://sip.example.com/grpc`) is used as given; then `port` must be omitted, and an `http://` URL
+  together with `useSecureChannel: true` is refused. A `host:port` string is refused; use `port`.
+- The certificate's subject alternative names (SAN) must match the host in the URL; a browser has no
+  `ssl_target_name_override`.
+
+Outside a browser (Node.js services, tests, CLIs) use [`@ondewo/sip-client-nodejs`](https://www.npmjs.com/package/@ondewo/sip-client-nodejs): it takes
+the CA and the client certificate / key as PEM content and implements mutual TLS in code. This package runs only in a
+browser (Angular, gRPC-web) and has no Node.js transport.
+
+### A test PKI with openssl
+
+A CA, a server certificate with SANs, and a client certificate with the `clientAuth` extended key usage. For tests
+only: the keys are unencrypted.
+
+```bash
+openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes -days 365 \
+  -subj "/CN=Test CA" -keyout ca.key -out ca.pem
+
+printf 'subjectAltName=DNS:localhost,IP:127.0.0.1\nextendedKeyUsage=serverAuth\n' > server.ext
+openssl req -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes \
+  -subj "/CN=localhost" -keyout server.key -out server.csr
+openssl x509 -req -in server.csr -CA ca.pem -CAkey ca.key -CAcreateserial -days 365 \
+  -extfile server.ext -out server.pem
+
+printf 'extendedKeyUsage=clientAuth\n' > client.ext
+openssl req -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes \
+  -subj "/CN=my-client" -keyout client.key -out client.csr
+openssl x509 -req -in client.csr -CA ca.pem -CAkey ca.key -CAcreateserial -days 365 \
+  -extfile client.ext -out client.pem
+
+# the browser imports a client identity as PKCS#12
+openssl pkcs12 -export -in client.pem -inkey client.key -certfile ca.pem -out client.p12
+
+chmod 600 *.key *.p12
+openssl verify -CAfile ca.pem server.pem client.pem
+```
+
+The gRPC-web proxy serves `server.pem` / `server.key` and, for mutual TLS, trusts `ca.pem` for its clients (Envoy:
+`require_client_certificate: true` with `validation_context.trusted_ca`). The browser machine imports `ca.pem` as a
+trusted root and, for mutual TLS, `client.p12` as a personal certificate.
+
+### TLS security notes
+
+- No secret is part of the endpoint config, so nothing in it needs redacting, and this package never logs a config.
+- A private key in a web application is readable by anyone who loads the page. Keep client identities in the
+  browser's certificate store (or a smart card), never in `environment.ts`, `assets/` or the bundle.
+- A page served over `https://` cannot call an `http://` endpoint (mixed content); use plaintext only for local
+  development with the page itself on `http://localhost`.
+
+### TLS troubleshooting
+
+The browser reports a failed handshake to gRPC-web as status `UNAVAILABLE` / `UNKNOWN` with little detail; the cause
+is in the browser's developer tools (Network tab / console):
+
+- **`net::ERR_CERT_AUTHORITY_INVALID`**: the server certificate is signed by a CA the browser does not trust. Import
+  the CA into the OS / browser trust store, or serve a certificate from a public CA.
+- **`net::ERR_CERT_COMMON_NAME_INVALID`**: the host in the URL is not in the certificate's SAN. Connect by the name in
+  the SAN, or reissue the certificate with the host (`IP:` SAN for an address).
+- **`net::ERR_BAD_SSL_CLIENT_AUTH_CERT`** / **`ERR_SSL_CLIENT_AUTH_CERT_NEEDED`**: the proxy requires a client
+  certificate and the browser has none (or one the proxy's CA did not sign). Import the user's `.p12`, and check that
+  the proxy trusts its CA.
+- **Mixed content / blocked request**: the page is on `https://` and the endpoint on `http://`; use
+  `useSecureChannel: true`.
+- **CORS error**: not a TLS problem; the gRPC-web proxy must allow the page's origin and the `grpc-web` headers.
+
 [comment]: <> (START OF GITHUB README)
 
 ## Build
