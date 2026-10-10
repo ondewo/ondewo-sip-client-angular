@@ -26,3 +26,6 @@ dist/
 # rewrites the `[comment]: <> (START/END OF GITHUB README)` slice markers the release cuts
 # the published README with.
 README.md
+# jest's `coverageDirectory` output (gitignored); `make prettier` after a local test run would
+# otherwise check the generated lcov-report HTML.
+coverage/
