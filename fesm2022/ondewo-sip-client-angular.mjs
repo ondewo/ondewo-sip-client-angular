@@ -1864,10 +1864,10 @@ class SipClient {
             .sipUnMute(requestData, requestMetadata)
             .pipe(throwStatusErrors(), takeMessages());
     }
-    static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "20.3.29", ngImport: i0, type: SipClient, deps: [{ token: GRPC_SIP_CLIENT_SETTINGS, optional: true }, { token: GRPC_CLIENT_FACTORY }, { token: i1.GrpcHandler }], target: i0.ɵɵFactoryTarget.Injectable }); }
-    static { this.ɵprov = i0.ɵɵngDeclareInjectable({ minVersion: "12.0.0", version: "20.3.29", ngImport: i0, type: SipClient, providedIn: 'any' }); }
+    static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "20.3.33", ngImport: i0, type: SipClient, deps: [{ token: GRPC_SIP_CLIENT_SETTINGS, optional: true }, { token: GRPC_CLIENT_FACTORY }, { token: i1.GrpcHandler }], target: i0.ɵɵFactoryTarget.Injectable }); }
+    static { this.ɵprov = i0.ɵɵngDeclareInjectable({ minVersion: "12.0.0", version: "20.3.33", ngImport: i0, type: SipClient, providedIn: 'any' }); }
 }
-i0.ɵɵngDeclareClassMetadata({ minVersion: "12.0.0", version: "20.3.29", ngImport: i0, type: SipClient, decorators: [{
+i0.ɵɵngDeclareClassMetadata({ minVersion: "12.0.0", version: "20.3.33", ngImport: i0, type: SipClient, decorators: [{
             type: Injectable,
             args: [{ providedIn: 'any' }]
         }], ctorParameters: () => [{ type: undefined, decorators: [{
@@ -2075,10 +2075,10 @@ class AuthGrpcInterceptor {
             return next.handle(request);
         }));
     }
-    static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "20.3.29", ngImport: i0, type: AuthGrpcInterceptor, deps: [{ token: TOKEN_PROVIDER }], target: i0.ɵɵFactoryTarget.Injectable }); }
-    static { this.ɵprov = i0.ɵɵngDeclareInjectable({ minVersion: "12.0.0", version: "20.3.29", ngImport: i0, type: AuthGrpcInterceptor }); }
+    static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "20.3.33", ngImport: i0, type: AuthGrpcInterceptor, deps: [{ token: TOKEN_PROVIDER }], target: i0.ɵɵFactoryTarget.Injectable }); }
+    static { this.ɵprov = i0.ɵɵngDeclareInjectable({ minVersion: "12.0.0", version: "20.3.33", ngImport: i0, type: AuthGrpcInterceptor }); }
 }
-i0.ɵɵngDeclareClassMetadata({ minVersion: "12.0.0", version: "20.3.29", ngImport: i0, type: AuthGrpcInterceptor, decorators: [{
+i0.ɵɵngDeclareClassMetadata({ minVersion: "12.0.0", version: "20.3.33", ngImport: i0, type: AuthGrpcInterceptor, decorators: [{
             type: Injectable
         }], ctorParameters: () => [{ type: undefined, decorators: [{
                     type: Inject,
@@ -2409,10 +2409,10 @@ class KeycloakTokenProvider {
         }
         return typeof caughtError === "string" ? caughtError : JSON.stringify(caughtError);
     }
-    static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "20.3.29", ngImport: i0, type: KeycloakTokenProvider, deps: [{ token: i1$1.HttpClient }, { token: i0.NgZone }, { token: KEYCLOAK_TOKEN_PROVIDER_CONFIG, optional: true }], target: i0.ɵɵFactoryTarget.Injectable }); }
-    static { this.ɵprov = i0.ɵɵngDeclareInjectable({ minVersion: "12.0.0", version: "20.3.29", ngImport: i0, type: KeycloakTokenProvider, providedIn: "root" }); }
+    static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "20.3.33", ngImport: i0, type: KeycloakTokenProvider, deps: [{ token: i1$1.HttpClient }, { token: i0.NgZone }, { token: KEYCLOAK_TOKEN_PROVIDER_CONFIG, optional: true }], target: i0.ɵɵFactoryTarget.Injectable }); }
+    static { this.ɵprov = i0.ɵɵngDeclareInjectable({ minVersion: "12.0.0", version: "20.3.33", ngImport: i0, type: KeycloakTokenProvider, providedIn: "root" }); }
 }
-i0.ɵɵngDeclareClassMetadata({ minVersion: "12.0.0", version: "20.3.29", ngImport: i0, type: KeycloakTokenProvider, decorators: [{
+i0.ɵɵngDeclareClassMetadata({ minVersion: "12.0.0", version: "20.3.33", ngImport: i0, type: KeycloakTokenProvider, decorators: [{
             type: Injectable,
             args: [{ providedIn: "root" }]
         }], ctorParameters: () => [{ type: i1$1.HttpClient }, { type: i0.NgZone }, { type: undefined, decorators: [{
@@ -2489,6 +2489,131 @@ function provideKeycloakTokenProvider(config) {
 }
 
 /**
+ * Builds the gRPC-web endpoint URL (`host` setting of `@ngx-grpc/grpc-web-client`) from the
+ * same `host` / `port` / `useSecureChannel` fields every ONDEWO SDK takes.
+ *
+ * In a browser the TLS handshake belongs to the user agent: it verifies the server against
+ * its own (OS / browser) trust store and presents a client certificate only from the
+ * browser's certificate store. Application code can neither add a CA nor attach a client
+ * identity, and a private key must never be shipped to a browser. The certificate fields the
+ * other SDKs accept (`grpcCert`, `grpcClientCert`, `grpcClientKey`) are therefore refused
+ * here instead of being silently dropped.
+ */
+/**
+ * Certificate / key fields of the other ONDEWO SDKs' configs (camelCase and snake_case) that a
+ * browser cannot use. A non-empty value in any of them makes {@link buildGrpcWebHost} throw.
+ */
+const BROWSER_UNSUPPORTED_TLS_FIELDS = [
+    "grpcCert",
+    "grpcClientCert",
+    "grpcClientKey",
+    "grpc_cert",
+    "grpc_client_cert",
+    "grpc_client_key"
+];
+/** Raised for an unusable {@link GrpcWebEndpointConfig}. The message names fields, never their values. */
+class GrpcWebEndpointError extends Error {
+    /**
+     * @param message a description of the problem that names the offending field.
+     */
+    constructor(message) {
+        super(message);
+        this.name = "GrpcWebEndpointError";
+    }
+}
+/** A URL scheme at the start of `host` (`https://…`). */
+const SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:\/\//i;
+/** A bare IPv6 literal: hex digits, dots (embedded IPv4) and at least two colons. */
+const BARE_IPV6_PATTERN = /^(?=(?:[^:]*:){2})[0-9a-f:.]+$/i;
+/**
+ * Return the gRPC-web base URL for `config`: `https://host:port` by default, `http://host:port`
+ * when `useSecureChannel` is `false` (with a warning naming `host:port`). A bare IPv6 literal is
+ * bracketed (`https://[::1]:8443`); a bracketed host or a host that already carries a scheme is
+ * left alone.
+ *
+ * ```ts
+ * GrpcWebClientModule.forRoot({ settings: { host: buildGrpcWebHost({ host: "nlu.example.com", port: 443 }) } })
+ * ```
+ *
+ * @param config the endpoint settings.
+ * @returns the base URL to pass as the gRPC-web client's `host` setting.
+ * @throws GrpcWebEndpointError when a certificate / key field is set, the host is empty or
+ *   carries a port, the port is invalid, or an `http://` URL is combined with
+ *   `useSecureChannel: true`.
+ */
+function buildGrpcWebHost(config) {
+    const fields = config;
+    for (const field of BROWSER_UNSUPPORTED_TLS_FIELDS) {
+        const value = fields[field];
+        if (value !== undefined && value !== null && value !== "") {
+            throw new GrpcWebEndpointError(`GrpcWebEndpointConfig.${field} is not supported by a browser gRPC-web client: the browser owns the TLS ` +
+                "handshake, trusts its own certificate store and presents a client certificate only from the browser/OS " +
+                "store. Remove the field (never ship a private key to a browser); see the README section " +
+                "'TLS, mutual TLS and certificates'.");
+        }
+    }
+    const host = config.host;
+    if (typeof host !== "string" || host.trim() === "") {
+        throw new GrpcWebEndpointError("GrpcWebEndpointConfig.host must be a non-empty string");
+    }
+    const secure = config.useSecureChannel !== false;
+    if (SCHEME_PATTERN.test(host)) {
+        if (config.port !== undefined) {
+            throw new GrpcWebEndpointError("GrpcWebEndpointConfig.port must be omitted when GrpcWebEndpointConfig.host is a URL; put the port in the URL");
+        }
+        let url;
+        try {
+            url = new URL(host);
+        }
+        catch {
+            throw new GrpcWebEndpointError("GrpcWebEndpointConfig.host is not a valid URL");
+        }
+        if (url.protocol !== "https:" && url.protocol !== "http:") {
+            throw new GrpcWebEndpointError("GrpcWebEndpointConfig.host must use the http:// or https:// scheme");
+        }
+        if (url.protocol === "http:") {
+            if (secure) {
+                throw new GrpcWebEndpointError("GrpcWebEndpointConfig.host uses http:// but useSecureChannel is true; use an https:// URL " +
+                    "or set useSecureChannel: false");
+            }
+            // URL.host leaves out any user:password@ part, so the warning cannot leak credentials
+            warnInsecure(url.host);
+        }
+        return host;
+    }
+    let bareHost = host;
+    if (!host.startsWith("[") && host.includes(":")) {
+        if (!BARE_IPV6_PATTERN.test(host)) {
+            throw new GrpcWebEndpointError("GrpcWebEndpointConfig.host must not contain a port; set GrpcWebEndpointConfig.port instead");
+        }
+        bareHost = `[${host}]`;
+    }
+    let authority = bareHost;
+    if (config.port !== undefined) {
+        const port = Number(config.port);
+        if (String(config.port).trim() === "" || !Number.isInteger(port) || port < 1 || port > 65535) {
+            throw new GrpcWebEndpointError("GrpcWebEndpointConfig.port must be an integer between 1 and 65535");
+        }
+        authority = `${bareHost}:${port}`;
+    }
+    if (secure) {
+        return `https://${authority}`;
+    }
+    warnInsecure(authority);
+    return `http://${authority}`;
+}
+/**
+ * Warn, through the console the host application already uses, that requests (and bearer
+ * tokens) to `authority` travel unencrypted.
+ *
+ * @param authority the `host:port` the insecure channel targets.
+ */
+function warnInsecure(authority) {
+    console.warn(`ONDEWO gRPC-web: insecure http:// endpoint ${authority}; requests and bearer tokens are sent unencrypted. ` +
+        "Use useSecureChannel: true (https://) outside local development.");
+}
+
+/**
  * Public auth surface for `@ondewo/sip-client-angular`.
  *
  * The consuming application supplies the current Keycloak access token through a
@@ -2501,5 +2626,5 @@ function provideKeycloakTokenProvider(config) {
  * Generated bundle index. Do not edit.
  */
 
-export { AUTHORIZATION_HEADER, AuthGrpcInterceptor, BEARER_PREFIX, GRPC_SIP_CLIENT_SETTINGS, KEYCLOAK_TOKEN_PROVIDER_CONFIG, KeycloakAuthenticationError, KeycloakTokenProvider, MIN_REFRESH_DELAY_IN_S, REFRESH_SKEW_IN_S, SipClient, SipEndCallRequest, SipPlayWavFilesRequest, SipRegisterAccountRequest, SipStartCallRequest, SipStartSessionRequest, SipStatus, SipStatusHistoryResponse, SipTransferCallRequest, TOKEN_PROVIDER, authHttpInterceptor, buildBearerValue, provideKeycloakTokenProvider, provideOndewoSipAuth, resolveBearerValue, resolveToken };
+export { AUTHORIZATION_HEADER, AuthGrpcInterceptor, BEARER_PREFIX, BROWSER_UNSUPPORTED_TLS_FIELDS, GRPC_SIP_CLIENT_SETTINGS, GrpcWebEndpointError, KEYCLOAK_TOKEN_PROVIDER_CONFIG, KeycloakAuthenticationError, KeycloakTokenProvider, MIN_REFRESH_DELAY_IN_S, REFRESH_SKEW_IN_S, SipClient, SipEndCallRequest, SipPlayWavFilesRequest, SipRegisterAccountRequest, SipStartCallRequest, SipStartSessionRequest, SipStatus, SipStatusHistoryResponse, SipTransferCallRequest, TOKEN_PROVIDER, authHttpInterceptor, buildBearerValue, buildGrpcWebHost, provideKeycloakTokenProvider, provideOndewoSipAuth, resolveBearerValue, resolveToken };
 //# sourceMappingURL=ondewo-sip-client-angular.mjs.map
