@@ -219,8 +219,15 @@ spc: ## Checks if the Release Branch, Tag and Pypi version already exist
 ########################################################
 # Build
 
-update_package: ## Updates Package Version in src/package.json
-	@perl -i -pe "s/\"version\": \"[0-9]*.[0-9]*.[0-9]\"/\"version\": \"${ONDEWO_SIP_VERSION}\"/g" src/package.json
+update_package: ## Updates Package Version in src/package.json and in the committed root package.json and package-lock.json
+	@perl -i -pe "s/\"version\": \"[0-9]+\.[0-9]+\.[0-9]+\"/\"version\": \"${ONDEWO_SIP_VERSION}\"/g" src/package.json
+	# The root manifest carries the version too, and it is the one a consumer installing this repo
+	# by commit hash actually reads. It cannot simply be generated: install_dependencies restores
+	# it with `git checkout --` (see there), so it is stamped here from the same single source.
+	@perl -i -pe "s/\"version\": \"[0-9]+\.[0-9]+\.[0-9]+\"/\"version\": \"${ONDEWO_SIP_VERSION}\"/g" package.json
+	# The lockfile repeats the root version twice (top level and packages[""]); only those two are
+	# stamped, never a dependency's version.
+	@perl -0777 -i -pe 's/\A(\{\s*"name":\s*"[^"]*",\s*"version":\s*)"[0-9]+\.[0-9]+\.[0-9]+"/$${1}"${ONDEWO_SIP_VERSION}"/; s/("packages":\s*\{\s*"":\s*\{\s*"name":\s*"[^"]*",\s*"version":\s*)"[0-9]+\.[0-9]+\.[0-9]+"/$${1}"${ONDEWO_SIP_VERSION}"/' package-lock.json
 
 build: check_out_correct_submodule_versions build_compiler update_package npm_run_build ## Build Code with Proto-Compiler
 	@echo "################### PROMPT FOR CHANGING FILE OWNERSHIP FROM ROOT TO YOU ##########################"
@@ -235,7 +242,12 @@ build: check_out_correct_submodule_versions build_compiler update_package npm_ru
 	make install_dependencies
 
 install_dependencies:
+	# Deliberate: ng-packagr writes a generated root manifest over this one during npm_run_build,
+	# and that generated manifest carries no devDependencies and no test scripts. Restoring the
+	# committed file puts the tooling back -- but it also reverts the version bump, which is why
+	# update_package runs again immediately below, BEFORE npm install regenerates the lockfile.
 	git checkout -- package.json package-lock.json 2>/dev/null || true
+	make update_package
 	rm -rf node_modules && npm install --include=dev --legacy-peer-deps
 	@for pkg in \
 		typescript \
