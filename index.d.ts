@@ -2019,17 +2019,6 @@ declare class SipClient {
 			requestData: SipSetCallMediaControlRequest,
 			requestMetadata?: GrpcMetadata
 		) => Observable<GrpcEvent<SipStatus>>;
-		/**
-		 * Bidirectional streaming: /ondewo.sip.Sip/SipStreamCallAudio
-		 *
-		 * @param requestMessage Request message
-		 * @param requestMetadata Request metadata
-		 * @returns Observable<GrpcEvent<thisProto.SipCallAudioResponse>>
-		 */
-		sipStreamCallAudio: (
-			requestData: Observable<SipCallAudioRequest>,
-			requestMetadata?: GrpcMetadata
-		) => Observable<GrpcEvent<SipCallAudioResponse>>;
 	};
 	constructor(settings: any, clientFactory: GrpcClientFactory<any>, handler: GrpcHandler);
 	/**
@@ -2145,17 +2134,6 @@ declare class SipClient {
 		requestData: SipSetCallMediaControlRequest,
 		requestMetadata?: GrpcMetadata
 	): Observable<SipStatus>;
-	/**
-	 * Bidirectional streaming @/ondewo.sip.Sip/SipStreamCallAudio
-	 *
-	 * @param requestMessage Request message
-	 * @param requestMetadata Request metadata
-	 * @returns Observable<thisProto.SipCallAudioResponse>
-	 */
-	sipStreamCallAudio(
-		requestData: Observable<SipCallAudioRequest>,
-		requestMetadata?: GrpcMetadata
-	): Observable<SipCallAudioResponse>;
 	static ɵfac: i0.ɵɵFactoryDeclaration<SipClient, [{ optional: true }, null, null]>;
 	static ɵprov: i0.ɵɵInjectableDeclaration<SipClient>;
 }

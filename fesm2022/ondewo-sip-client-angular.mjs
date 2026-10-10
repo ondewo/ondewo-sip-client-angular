@@ -3527,24 +3527,6 @@ class SipClient {
                     requestClass: SipSetCallMediaControlRequest,
                     responseClass: SipStatus
                 });
-            },
-            /**
-             * Bidirectional streaming: /ondewo.sip.Sip/SipStreamCallAudio
-             *
-             * @param requestMessage Request message
-             * @param requestMetadata Request metadata
-             * @returns Observable<GrpcEvent<thisProto.SipCallAudioResponse>>
-             */
-            sipStreamCallAudio: (requestData, requestMetadata = new GrpcMetadata()) => {
-                return this.handler.handle({
-                    type: GrpcCallType.bidiStream,
-                    client: this.client,
-                    path: '/ondewo.sip.Sip/SipStreamCallAudio',
-                    requestData,
-                    requestMetadata,
-                    requestClass: SipCallAudioRequest,
-                    responseClass: SipCallAudioResponse
-                });
             }
         };
         this.client = clientFactory.createClient('ondewo.sip.Sip', settings);
@@ -3703,18 +3685,6 @@ class SipClient {
     sipSetCallMediaControl(requestData, requestMetadata = new GrpcMetadata()) {
         return this.$raw
             .sipSetCallMediaControl(requestData, requestMetadata)
-            .pipe(throwStatusErrors(), takeMessages());
-    }
-    /**
-     * Bidirectional streaming @/ondewo.sip.Sip/SipStreamCallAudio
-     *
-     * @param requestMessage Request message
-     * @param requestMetadata Request metadata
-     * @returns Observable<thisProto.SipCallAudioResponse>
-     */
-    sipStreamCallAudio(requestData, requestMetadata = new GrpcMetadata()) {
-        return this.$raw
-            .sipStreamCallAudio(requestData, requestMetadata)
             .pipe(throwStatusErrors(), takeMessages());
     }
     static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "20.3.33", ngImport: i0, type: SipClient, deps: [{ token: GRPC_SIP_CLIENT_SETTINGS, optional: true }, { token: GRPC_CLIENT_FACTORY }, { token: i1.GrpcHandler }], target: i0.ɵɵFactoryTarget.Injectable }); }
