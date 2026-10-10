@@ -2,6 +2,24 @@
 
 *****************
 
+## Release ONDEWO SIP Angular Client 5.5.0
+
+### New Features
+
+* Tracking API Version [5.5.0](https://github.com/ondewo/ondewo-sip-api/releases/tag/5.5.0) ( [Documentation](https://ondewo.github.io/ondewo-sip-api/) ). The generated `SipClient` gains:
+  * `sipSetCallMediaControl` (`SipSetCallMediaControlRequest`, `MediaControlSetting`, `MediaControlOwner`): call-scoped operator media control (mute the bot, pause its listening, mark invited participants present). Requires the `x-ondewo-expected-call-id` and `x-ondewo-sip-call-control-token` metadata.
+  * `sipStreamCallAudio` (`SipCallAudioRequest` / `SipCallAudioResponse` and the `SipCallAudio*` messages): bidirectional live call audio. The gRPC-web protocol a browser speaks carries no client or bidirectional streams, so this method needs a transport that does.
+  * `sipReportAnsweringMachineDetected`, the in-container answering machine detection report.
+* New messages and fields: `AnsweringMachineDetectionResult`, status `OUTGOING_CALL_ANSWERING_MACHINE_DETECTED`, `SipStatus.amdResult` / `callId` / `botMuted` / `listeningPaused` / `callAudioStreams` / `sipResponseCode`, `SipEndCallRequest.endReason` (`ANSWERING_MACHINE`, `ANSWERING_MACHINE_VOICE_MESSAGE_LEFT`, `END_CALL_REASON_TRANSFERRED`) and `SipEndCallRequest.amdResult`, `SipTransferCallRequest.outcomeTimeoutMs`.
+* Call identity: requests can be scoped to one call with the `x-ondewo-expected-call-id` gRPC metadatum; a different value is refused on `sipTransferCall`, `sipMute`, `sipUnMute` and `sipPlayWavFiles`.
+* The API is purely additive: no field, enum value or RPC was renumbered or removed, so code written against 5.4.x keeps compiling. `SipGetSipStatus` / `SipGetSipStatusHistory` now declare `idempotency_level = NO_SIDE_EFFECTS` in the proto (no effect on the generated Angular code).
+
+### Build
+
+* Generated with ondewo-proto-compiler 5.15.5 (5.4.4 was generated with 5.15.2).
+
+*****************
+
 ## Release ONDEWO SIP Angular Client 5.4.4
 
 ### Improvements

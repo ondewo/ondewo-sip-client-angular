@@ -15,6 +15,34 @@ import { HttpHeaders } from '@angular/common/http';
 //
 // THIS IS A GENERATED FILE
 // DO NOT MODIFY IT! YOUR CHANGES WILL BE LOST
+var MediaControlSetting;
+(function (MediaControlSetting) {
+    MediaControlSetting[MediaControlSetting["MEDIA_CONTROL_SETTING_UNCHANGED"] = 0] = "MEDIA_CONTROL_SETTING_UNCHANGED";
+    MediaControlSetting[MediaControlSetting["MEDIA_CONTROL_SETTING_ON"] = 1] = "MEDIA_CONTROL_SETTING_ON";
+    MediaControlSetting[MediaControlSetting["MEDIA_CONTROL_SETTING_OFF"] = 2] = "MEDIA_CONTROL_SETTING_OFF";
+})(MediaControlSetting || (MediaControlSetting = {}));
+var MediaControlOwner;
+(function (MediaControlOwner) {
+    MediaControlOwner[MediaControlOwner["MEDIA_CONTROL_OWNER_UNSPECIFIED"] = 0] = "MEDIA_CONTROL_OWNER_UNSPECIFIED";
+    MediaControlOwner[MediaControlOwner["MEDIA_CONTROL_OWNER_OPERATOR"] = 1] = "MEDIA_CONTROL_OWNER_OPERATOR";
+    MediaControlOwner[MediaControlOwner["MEDIA_CONTROL_OWNER_PARTICIPANT"] = 2] = "MEDIA_CONTROL_OWNER_PARTICIPANT";
+})(MediaControlOwner || (MediaControlOwner = {}));
+var SipCallAudioMode;
+(function (SipCallAudioMode) {
+    SipCallAudioMode[SipCallAudioMode["SIP_CALL_AUDIO_MODE_UNSPECIFIED"] = 0] = "SIP_CALL_AUDIO_MODE_UNSPECIFIED";
+    SipCallAudioMode[SipCallAudioMode["SIP_CALL_AUDIO_MODE_LISTEN"] = 1] = "SIP_CALL_AUDIO_MODE_LISTEN";
+    SipCallAudioMode[SipCallAudioMode["SIP_CALL_AUDIO_MODE_TALK"] = 2] = "SIP_CALL_AUDIO_MODE_TALK";
+})(SipCallAudioMode || (SipCallAudioMode = {}));
+var SipCallAudioEndReason;
+(function (SipCallAudioEndReason) {
+    SipCallAudioEndReason[SipCallAudioEndReason["SIP_CALL_AUDIO_END_REASON_UNSPECIFIED"] = 0] = "SIP_CALL_AUDIO_END_REASON_UNSPECIFIED";
+    SipCallAudioEndReason[SipCallAudioEndReason["SIP_CALL_AUDIO_END_REASON_CLIENT_CLOSED"] = 1] = "SIP_CALL_AUDIO_END_REASON_CLIENT_CLOSED";
+    SipCallAudioEndReason[SipCallAudioEndReason["SIP_CALL_AUDIO_END_REASON_CALL_ENDED"] = 2] = "SIP_CALL_AUDIO_END_REASON_CALL_ENDED";
+    SipCallAudioEndReason[SipCallAudioEndReason["SIP_CALL_AUDIO_END_REASON_CALL_TRANSFERRED"] = 3] = "SIP_CALL_AUDIO_END_REASON_CALL_TRANSFERRED";
+    SipCallAudioEndReason[SipCallAudioEndReason["SIP_CALL_AUDIO_END_REASON_MAX_DURATION"] = 4] = "SIP_CALL_AUDIO_END_REASON_MAX_DURATION";
+    SipCallAudioEndReason[SipCallAudioEndReason["SIP_CALL_AUDIO_END_REASON_STALLED"] = 5] = "SIP_CALL_AUDIO_END_REASON_STALLED";
+    SipCallAudioEndReason[SipCallAudioEndReason["SIP_CALL_AUDIO_END_REASON_INTERNAL"] = 6] = "SIP_CALL_AUDIO_END_REASON_INTERNAL";
+})(SipCallAudioEndReason || (SipCallAudioEndReason = {}));
 /**
  * Message implementation for ondewo.sip.SipEndCallRequest
  */
@@ -35,6 +63,8 @@ class SipEndCallRequest {
      */
     static refineValues(_instance) {
         _instance.hardHangup = _instance.hardHangup || false;
+        _instance.endReason = _instance.endReason || 0;
+        _instance.amdResult = _instance.amdResult || undefined;
     }
     /**
      * Deserializes / reads binary message into message instance using provided binary reader
@@ -48,6 +78,13 @@ class SipEndCallRequest {
             switch (_reader.getFieldNumber()) {
                 case 1:
                     _instance.hardHangup = _reader.readBool();
+                    break;
+                case 2:
+                    _instance.endReason = _reader.readEnum();
+                    break;
+                case 3:
+                    _instance.amdResult = new AnsweringMachineDetectionResult();
+                    _reader.readMessage(_instance.amdResult, AnsweringMachineDetectionResult.deserializeBinaryFromReader);
                     break;
                 default:
                     _reader.skipField();
@@ -64,6 +101,12 @@ class SipEndCallRequest {
         if (_instance.hardHangup) {
             _writer.writeBool(1, _instance.hardHangup);
         }
+        if (_instance.endReason) {
+            _writer.writeEnum(2, _instance.endReason);
+        }
+        if (_instance.amdResult) {
+            _writer.writeMessage(3, _instance.amdResult, AnsweringMachineDetectionResult.serializeBinaryToWriter);
+        }
     }
     /**
      * Message constructor. Initializes the properties and applies default Protobuf values if necessary
@@ -72,6 +115,10 @@ class SipEndCallRequest {
     constructor(_value) {
         _value = _value || {};
         this.hardHangup = _value.hardHangup;
+        this.endReason = _value.endReason;
+        this.amdResult = _value.amdResult
+            ? new AnsweringMachineDetectionResult(_value.amdResult)
+            : undefined;
         SipEndCallRequest.refineValues(this);
     }
     get hardHangup() {
@@ -79,6 +126,18 @@ class SipEndCallRequest {
     }
     set hardHangup(value) {
         this._hardHangup = value;
+    }
+    get endReason() {
+        return this._endReason;
+    }
+    set endReason(value) {
+        this._endReason = value;
+    }
+    get amdResult() {
+        return this._amdResult;
+    }
+    set amdResult(value) {
+        this._amdResult = value;
     }
     /**
      * Serialize message to binary data
@@ -94,7 +153,9 @@ class SipEndCallRequest {
      */
     toObject() {
         return {
-            hardHangup: this.hardHangup
+            hardHangup: this.hardHangup,
+            endReason: this.endReason,
+            amdResult: this.amdResult ? this.amdResult.toObject() : undefined
         };
     }
     /**
@@ -112,10 +173,376 @@ class SipEndCallRequest {
     // @ts-ignore
     options) {
         return {
-            hardHangup: this.hardHangup
+            hardHangup: this.hardHangup,
+            endReason: SipEndCallRequest.EndCallReason[this.endReason === null || this.endReason === undefined
+                ? 0
+                : this.endReason],
+            amdResult: this.amdResult ? this.amdResult.toProtobufJSON(options) : null
         };
     }
 }
+(function (SipEndCallRequest) {
+    let EndCallReason;
+    (function (EndCallReason) {
+        EndCallReason[EndCallReason["END_CALL_REASON_UNSPECIFIED"] = 0] = "END_CALL_REASON_UNSPECIFIED";
+        EndCallReason[EndCallReason["ANSWERING_MACHINE"] = 1] = "ANSWERING_MACHINE";
+        EndCallReason[EndCallReason["ANSWERING_MACHINE_VOICE_MESSAGE_LEFT"] = 2] = "ANSWERING_MACHINE_VOICE_MESSAGE_LEFT";
+        EndCallReason[EndCallReason["END_CALL_REASON_TRANSFERRED"] = 3] = "END_CALL_REASON_TRANSFERRED";
+    })(EndCallReason = SipEndCallRequest.EndCallReason || (SipEndCallRequest.EndCallReason = {}));
+})(SipEndCallRequest || (SipEndCallRequest = {}));
+/**
+ * Message implementation for ondewo.sip.SipReportAnsweringMachineDetectedRequest
+ */
+class SipReportAnsweringMachineDetectedRequest {
+    static { this.id = 'ondewo.sip.SipReportAnsweringMachineDetectedRequest'; }
+    /**
+     * Deserialize binary data to message
+     * @param instance message instance
+     */
+    static deserializeBinary(bytes) {
+        const instance = new SipReportAnsweringMachineDetectedRequest();
+        SipReportAnsweringMachineDetectedRequest.deserializeBinaryFromReader(instance, new BinaryReader(bytes));
+        return instance;
+    }
+    /**
+     * Check all the properties and set default protobuf values if necessary
+     * @param _instance message instance
+     */
+    static refineValues(_instance) {
+        _instance.amdResult = _instance.amdResult || undefined;
+    }
+    /**
+     * Deserializes / reads binary message into message instance using provided binary reader
+     * @param _instance message instance
+     * @param _reader binary reader instance
+     */
+    static deserializeBinaryFromReader(_instance, _reader) {
+        while (_reader.nextField()) {
+            if (_reader.isEndGroup())
+                break;
+            switch (_reader.getFieldNumber()) {
+                case 1:
+                    _instance.amdResult = new AnsweringMachineDetectionResult();
+                    _reader.readMessage(_instance.amdResult, AnsweringMachineDetectionResult.deserializeBinaryFromReader);
+                    break;
+                default:
+                    _reader.skipField();
+            }
+        }
+        SipReportAnsweringMachineDetectedRequest.refineValues(_instance);
+    }
+    /**
+     * Serializes a message to binary format using provided binary reader
+     * @param _instance message instance
+     * @param _writer binary writer instance
+     */
+    static serializeBinaryToWriter(_instance, _writer) {
+        if (_instance.amdResult) {
+            _writer.writeMessage(1, _instance.amdResult, AnsweringMachineDetectionResult.serializeBinaryToWriter);
+        }
+    }
+    /**
+     * Message constructor. Initializes the properties and applies default Protobuf values if necessary
+     * @param _value initial values object or instance of SipReportAnsweringMachineDetectedRequest to deeply clone from
+     */
+    constructor(_value) {
+        _value = _value || {};
+        this.amdResult = _value.amdResult
+            ? new AnsweringMachineDetectionResult(_value.amdResult)
+            : undefined;
+        SipReportAnsweringMachineDetectedRequest.refineValues(this);
+    }
+    get amdResult() {
+        return this._amdResult;
+    }
+    set amdResult(value) {
+        this._amdResult = value;
+    }
+    /**
+     * Serialize message to binary data
+     * @param instance message instance
+     */
+    serializeBinary() {
+        const writer = new BinaryWriter();
+        SipReportAnsweringMachineDetectedRequest.serializeBinaryToWriter(this, writer);
+        return writer.getResultBuffer();
+    }
+    /**
+     * Cast message to standard JavaScript object (all non-primitive values are deeply cloned)
+     */
+    toObject() {
+        return {
+            amdResult: this.amdResult ? this.amdResult.toObject() : undefined
+        };
+    }
+    /**
+     * Convenience method to support JSON.stringify(message), replicates the structure of toObject()
+     */
+    toJSON() {
+        return this.toObject();
+    }
+    /**
+     * Cast message to JSON using protobuf JSON notation: https://developers.google.com/protocol-buffers/docs/proto3#json
+     * Attention: output differs from toObject() e.g. enums are represented as names and not as numbers, Timestamp is an ISO Date string format etc.
+     * If the message itself or some of descendant messages is google.protobuf.Any, you MUST provide a message pool as options. If not, the messagePool is not required
+     */
+    toProtobufJSON(
+    // @ts-ignore
+    options) {
+        return {
+            amdResult: this.amdResult ? this.amdResult.toProtobufJSON(options) : null
+        };
+    }
+}
+/**
+ * Message implementation for ondewo.sip.AnsweringMachineDetectionResult
+ */
+class AnsweringMachineDetectionResult {
+    static { this.id = 'ondewo.sip.AnsweringMachineDetectionResult'; }
+    /**
+     * Deserialize binary data to message
+     * @param instance message instance
+     */
+    static deserializeBinary(bytes) {
+        const instance = new AnsweringMachineDetectionResult();
+        AnsweringMachineDetectionResult.deserializeBinaryFromReader(instance, new BinaryReader(bytes));
+        return instance;
+    }
+    /**
+     * Check all the properties and set default protobuf values if necessary
+     * @param _instance message instance
+     */
+    static refineValues(_instance) {
+        _instance.verdict = _instance.verdict || 0;
+        _instance.cause = _instance.cause || 0;
+        _instance.confidence = _instance.confidence || 0;
+        _instance.decisionMs = _instance.decisionMs || 0;
+        _instance.ruleId = _instance.ruleId || '';
+        _instance.matchedCueIds = _instance.matchedCueIds || [];
+        _instance.actionTaken = _instance.actionTaken || 0;
+        _instance.callId = _instance.callId || '';
+    }
+    /**
+     * Deserializes / reads binary message into message instance using provided binary reader
+     * @param _instance message instance
+     * @param _reader binary reader instance
+     */
+    static deserializeBinaryFromReader(_instance, _reader) {
+        while (_reader.nextField()) {
+            if (_reader.isEndGroup())
+                break;
+            switch (_reader.getFieldNumber()) {
+                case 1:
+                    _instance.verdict = _reader.readEnum();
+                    break;
+                case 2:
+                    _instance.cause = _reader.readEnum();
+                    break;
+                case 3:
+                    _instance.confidence = _reader.readFloat();
+                    break;
+                case 4:
+                    _instance.decisionMs = _reader.readInt32();
+                    break;
+                case 5:
+                    _instance.ruleId = _reader.readString();
+                    break;
+                case 6:
+                    (_instance.matchedCueIds = _instance.matchedCueIds || []).push(_reader.readString());
+                    break;
+                case 7:
+                    _instance.actionTaken = _reader.readEnum();
+                    break;
+                case 8:
+                    _instance.callId = _reader.readString();
+                    break;
+                default:
+                    _reader.skipField();
+            }
+        }
+        AnsweringMachineDetectionResult.refineValues(_instance);
+    }
+    /**
+     * Serializes a message to binary format using provided binary reader
+     * @param _instance message instance
+     * @param _writer binary writer instance
+     */
+    static serializeBinaryToWriter(_instance, _writer) {
+        if (_instance.verdict) {
+            _writer.writeEnum(1, _instance.verdict);
+        }
+        if (_instance.cause) {
+            _writer.writeEnum(2, _instance.cause);
+        }
+        if (_instance.confidence) {
+            _writer.writeFloat(3, _instance.confidence);
+        }
+        if (_instance.decisionMs) {
+            _writer.writeInt32(4, _instance.decisionMs);
+        }
+        if (_instance.ruleId) {
+            _writer.writeString(5, _instance.ruleId);
+        }
+        if (_instance.matchedCueIds && _instance.matchedCueIds.length) {
+            _writer.writeRepeatedString(6, _instance.matchedCueIds);
+        }
+        if (_instance.actionTaken) {
+            _writer.writeEnum(7, _instance.actionTaken);
+        }
+        if (_instance.callId) {
+            _writer.writeString(8, _instance.callId);
+        }
+    }
+    /**
+     * Message constructor. Initializes the properties and applies default Protobuf values if necessary
+     * @param _value initial values object or instance of AnsweringMachineDetectionResult to deeply clone from
+     */
+    constructor(_value) {
+        _value = _value || {};
+        this.verdict = _value.verdict;
+        this.cause = _value.cause;
+        this.confidence = _value.confidence;
+        this.decisionMs = _value.decisionMs;
+        this.ruleId = _value.ruleId;
+        this.matchedCueIds = (_value.matchedCueIds || []).slice();
+        this.actionTaken = _value.actionTaken;
+        this.callId = _value.callId;
+        AnsweringMachineDetectionResult.refineValues(this);
+    }
+    get verdict() {
+        return this._verdict;
+    }
+    set verdict(value) {
+        this._verdict = value;
+    }
+    get cause() {
+        return this._cause;
+    }
+    set cause(value) {
+        this._cause = value;
+    }
+    get confidence() {
+        return this._confidence;
+    }
+    set confidence(value) {
+        this._confidence = value;
+    }
+    get decisionMs() {
+        return this._decisionMs;
+    }
+    set decisionMs(value) {
+        this._decisionMs = value;
+    }
+    get ruleId() {
+        return this._ruleId;
+    }
+    set ruleId(value) {
+        this._ruleId = value;
+    }
+    get matchedCueIds() {
+        return this._matchedCueIds;
+    }
+    set matchedCueIds(value) {
+        this._matchedCueIds = value;
+    }
+    get actionTaken() {
+        return this._actionTaken;
+    }
+    set actionTaken(value) {
+        this._actionTaken = value;
+    }
+    get callId() {
+        return this._callId;
+    }
+    set callId(value) {
+        this._callId = value;
+    }
+    /**
+     * Serialize message to binary data
+     * @param instance message instance
+     */
+    serializeBinary() {
+        const writer = new BinaryWriter();
+        AnsweringMachineDetectionResult.serializeBinaryToWriter(this, writer);
+        return writer.getResultBuffer();
+    }
+    /**
+     * Cast message to standard JavaScript object (all non-primitive values are deeply cloned)
+     */
+    toObject() {
+        return {
+            verdict: this.verdict,
+            cause: this.cause,
+            confidence: this.confidence,
+            decisionMs: this.decisionMs,
+            ruleId: this.ruleId,
+            matchedCueIds: (this.matchedCueIds || []).slice(),
+            actionTaken: this.actionTaken,
+            callId: this.callId
+        };
+    }
+    /**
+     * Convenience method to support JSON.stringify(message), replicates the structure of toObject()
+     */
+    toJSON() {
+        return this.toObject();
+    }
+    /**
+     * Cast message to JSON using protobuf JSON notation: https://developers.google.com/protocol-buffers/docs/proto3#json
+     * Attention: output differs from toObject() e.g. enums are represented as names and not as numbers, Timestamp is an ISO Date string format etc.
+     * If the message itself or some of descendant messages is google.protobuf.Any, you MUST provide a message pool as options. If not, the messagePool is not required
+     */
+    toProtobufJSON(
+    // @ts-ignore
+    options) {
+        return {
+            verdict: AnsweringMachineDetectionResult.Verdict[this.verdict === null || this.verdict === undefined ? 0 : this.verdict],
+            cause: AnsweringMachineDetectionResult.Cause[this.cause === null || this.cause === undefined ? 0 : this.cause],
+            confidence: this.confidence,
+            decisionMs: this.decisionMs,
+            ruleId: this.ruleId,
+            matchedCueIds: (this.matchedCueIds || []).slice(),
+            actionTaken: AnsweringMachineDetectionResult.ActionTaken[this.actionTaken === null || this.actionTaken === undefined
+                ? 0
+                : this.actionTaken],
+            callId: this.callId
+        };
+    }
+}
+(function (AnsweringMachineDetectionResult) {
+    let Verdict;
+    (function (Verdict) {
+        Verdict[Verdict["VERDICT_UNSPECIFIED"] = 0] = "VERDICT_UNSPECIFIED";
+        Verdict[Verdict["HUMAN"] = 1] = "HUMAN";
+        Verdict[Verdict["MACHINE"] = 2] = "MACHINE";
+        Verdict[Verdict["IVR"] = 3] = "IVR";
+        Verdict[Verdict["FAX"] = 4] = "FAX";
+        Verdict[Verdict["NETWORK_ANNOUNCEMENT"] = 5] = "NETWORK_ANNOUNCEMENT";
+        Verdict[Verdict["CALL_SCREENING"] = 6] = "CALL_SCREENING";
+        Verdict[Verdict["NO_SPEECH"] = 7] = "NO_SPEECH";
+        Verdict[Verdict["UNKNOWN"] = 8] = "UNKNOWN";
+    })(Verdict = AnsweringMachineDetectionResult.Verdict || (AnsweringMachineDetectionResult.Verdict = {}));
+    let Cause;
+    (function (Cause) {
+        Cause[Cause["CAUSE_UNSPECIFIED"] = 0] = "CAUSE_UNSPECIFIED";
+        Cause[Cause["CADENCE"] = 1] = "CADENCE";
+        Cause[Cause["KEYWORD"] = 2] = "KEYWORD";
+        Cause[Cause["BEEP"] = 3] = "BEEP";
+        Cause[Cause["TONE"] = 4] = "TONE";
+        Cause[Cause["CADENCE_AND_KEYWORD"] = 5] = "CADENCE_AND_KEYWORD";
+        Cause[Cause["CADENCE_AND_BEEP"] = 6] = "CADENCE_AND_BEEP";
+        Cause[Cause["TIMEOUT"] = 7] = "TIMEOUT";
+        Cause[Cause["SILENCE"] = 8] = "SILENCE";
+    })(Cause = AnsweringMachineDetectionResult.Cause || (AnsweringMachineDetectionResult.Cause = {}));
+    let ActionTaken;
+    (function (ActionTaken) {
+        ActionTaken[ActionTaken["ACTION_TAKEN_UNSPECIFIED"] = 0] = "ACTION_TAKEN_UNSPECIFIED";
+        ActionTaken[ActionTaken["HUNG_UP"] = 1] = "HUNG_UP";
+        ActionTaken[ActionTaken["CONTINUED"] = 2] = "CONTINUED";
+        ActionTaken[ActionTaken["DETECT_ONLY"] = 3] = "DETECT_ONLY";
+        ActionTaken[ActionTaken["LEFT_VOICE_MESSAGE"] = 4] = "LEFT_VOICE_MESSAGE";
+    })(ActionTaken = AnsweringMachineDetectionResult.ActionTaken || (AnsweringMachineDetectionResult.ActionTaken = {}));
+})(AnsweringMachineDetectionResult || (AnsweringMachineDetectionResult = {}));
 /**
  * Message implementation for ondewo.sip.SipStartCallRequest
  */
@@ -655,6 +1082,7 @@ class SipTransferCallRequest {
     static refineValues(_instance) {
         _instance.transferId = _instance.transferId || '';
         _instance.headers = _instance.headers || {};
+        _instance.outcomeTimeoutMs = _instance.outcomeTimeoutMs || 0;
     }
     /**
      * Deserializes / reads binary message into message instance using provided binary reader
@@ -674,6 +1102,9 @@ class SipTransferCallRequest {
                     _reader.readMessage(msg_2, SipTransferCallRequest.HeadersEntry.deserializeBinaryFromReader);
                     _instance.headers = _instance.headers || {};
                     _instance.headers[msg_2.key] = msg_2.value;
+                    break;
+                case 3:
+                    _instance.outcomeTimeoutMs = _reader.readUint32();
                     break;
                 default:
                     _reader.skipField();
@@ -699,6 +1130,9 @@ class SipTransferCallRequest {
                 _writer.writeRepeatedMessage(2, repeated_2, SipTransferCallRequest.HeadersEntry.serializeBinaryToWriter);
             }
         }
+        if (_instance.outcomeTimeoutMs) {
+            _writer.writeUint32(3, _instance.outcomeTimeoutMs);
+        }
     }
     /**
      * Message constructor. Initializes the properties and applies default Protobuf values if necessary
@@ -710,7 +1144,8 @@ class SipTransferCallRequest {
         (this.headers = _value.headers
             ? Object.keys(_value.headers).reduce((r, k) => ({ ...r, [k]: _value.headers[k] }), {})
             : {}),
-            SipTransferCallRequest.refineValues(this);
+            (this.outcomeTimeoutMs = _value.outcomeTimeoutMs);
+        SipTransferCallRequest.refineValues(this);
     }
     get transferId() {
         return this._transferId;
@@ -723,6 +1158,12 @@ class SipTransferCallRequest {
     }
     set headers(value) {
         this._headers = value;
+    }
+    get outcomeTimeoutMs() {
+        return this._outcomeTimeoutMs;
+    }
+    set outcomeTimeoutMs(value) {
+        this._outcomeTimeoutMs = value;
     }
     /**
      * Serialize message to binary data
@@ -741,7 +1182,8 @@ class SipTransferCallRequest {
             transferId: this.transferId,
             headers: this.headers
                 ? Object.keys(this.headers).reduce((r, k) => ({ ...r, [k]: this.headers[k] }), {})
-                : {}
+                : {},
+            outcomeTimeoutMs: this.outcomeTimeoutMs
         };
     }
     /**
@@ -762,7 +1204,8 @@ class SipTransferCallRequest {
             transferId: this.transferId,
             headers: this.headers
                 ? Object.keys(this.headers).reduce((r, k) => ({ ...r, [k]: this.headers[k] }), {})
-                : {}
+                : {},
+            outcomeTimeoutMs: this.outcomeTimeoutMs
         };
     }
 }
@@ -915,6 +1358,12 @@ class SipStatus {
         _instance.exceptionName = _instance.exceptionName || '';
         _instance.exceptionTraceback = _instance.exceptionTraceback || '';
         _instance.nluSessionName = _instance.nluSessionName || '';
+        _instance.amdResult = _instance.amdResult || undefined;
+        _instance.callId = _instance.callId || '';
+        _instance.botMuted = _instance.botMuted || false;
+        _instance.listeningPaused = _instance.listeningPaused || false;
+        _instance.callAudioStreams = _instance.callAudioStreams || 0;
+        _instance.sipResponseCode = _instance.sipResponseCode || 0;
     }
     /**
      * Deserializes / reads binary message into message instance using provided binary reader
@@ -959,6 +1408,25 @@ class SipStatus {
                     break;
                 case 10:
                     _instance.nluSessionName = _reader.readString();
+                    break;
+                case 11:
+                    _instance.amdResult = new AnsweringMachineDetectionResult();
+                    _reader.readMessage(_instance.amdResult, AnsweringMachineDetectionResult.deserializeBinaryFromReader);
+                    break;
+                case 12:
+                    _instance.callId = _reader.readString();
+                    break;
+                case 13:
+                    _instance.botMuted = _reader.readBool();
+                    break;
+                case 14:
+                    _instance.listeningPaused = _reader.readBool();
+                    break;
+                case 15:
+                    _instance.callAudioStreams = _reader.readInt32();
+                    break;
+                case 16:
+                    _instance.sipResponseCode = _reader.readInt32();
                     break;
                 default:
                     _reader.skipField();
@@ -1008,6 +1476,24 @@ class SipStatus {
         if (_instance.nluSessionName) {
             _writer.writeString(10, _instance.nluSessionName);
         }
+        if (_instance.amdResult) {
+            _writer.writeMessage(11, _instance.amdResult, AnsweringMachineDetectionResult.serializeBinaryToWriter);
+        }
+        if (_instance.callId) {
+            _writer.writeString(12, _instance.callId);
+        }
+        if (_instance.botMuted) {
+            _writer.writeBool(13, _instance.botMuted);
+        }
+        if (_instance.listeningPaused) {
+            _writer.writeBool(14, _instance.listeningPaused);
+        }
+        if (_instance.callAudioStreams) {
+            _writer.writeInt32(15, _instance.callAudioStreams);
+        }
+        if (_instance.sipResponseCode) {
+            _writer.writeInt32(16, _instance.sipResponseCode);
+        }
     }
     /**
      * Message constructor. Initializes the properties and applies default Protobuf values if necessary
@@ -1029,6 +1515,14 @@ class SipStatus {
         this.exceptionName = _value.exceptionName;
         this.exceptionTraceback = _value.exceptionTraceback;
         this.nluSessionName = _value.nluSessionName;
+        this.amdResult = _value.amdResult
+            ? new AnsweringMachineDetectionResult(_value.amdResult)
+            : undefined;
+        this.callId = _value.callId;
+        this.botMuted = _value.botMuted;
+        this.listeningPaused = _value.listeningPaused;
+        this.callAudioStreams = _value.callAudioStreams;
+        this.sipResponseCode = _value.sipResponseCode;
         SipStatus.refineValues(this);
     }
     get accountName() {
@@ -1091,6 +1585,42 @@ class SipStatus {
     set nluSessionName(value) {
         this._nluSessionName = value;
     }
+    get amdResult() {
+        return this._amdResult;
+    }
+    set amdResult(value) {
+        this._amdResult = value;
+    }
+    get callId() {
+        return this._callId;
+    }
+    set callId(value) {
+        this._callId = value;
+    }
+    get botMuted() {
+        return this._botMuted;
+    }
+    set botMuted(value) {
+        this._botMuted = value;
+    }
+    get listeningPaused() {
+        return this._listeningPaused;
+    }
+    set listeningPaused(value) {
+        this._listeningPaused = value;
+    }
+    get callAudioStreams() {
+        return this._callAudioStreams;
+    }
+    set callAudioStreams(value) {
+        this._callAudioStreams = value;
+    }
+    get sipResponseCode() {
+        return this._sipResponseCode;
+    }
+    set sipResponseCode(value) {
+        this._sipResponseCode = value;
+    }
     /**
      * Serialize message to binary data
      * @param instance message instance
@@ -1116,7 +1646,13 @@ class SipStatus {
             description: this.description,
             exceptionName: this.exceptionName,
             exceptionTraceback: this.exceptionTraceback,
-            nluSessionName: this.nluSessionName
+            nluSessionName: this.nluSessionName,
+            amdResult: this.amdResult ? this.amdResult.toObject() : undefined,
+            callId: this.callId,
+            botMuted: this.botMuted,
+            listeningPaused: this.listeningPaused,
+            callAudioStreams: this.callAudioStreams,
+            sipResponseCode: this.sipResponseCode
         };
     }
     /**
@@ -1147,7 +1683,13 @@ class SipStatus {
             description: this.description,
             exceptionName: this.exceptionName,
             exceptionTraceback: this.exceptionTraceback,
-            nluSessionName: this.nluSessionName
+            nluSessionName: this.nluSessionName,
+            amdResult: this.amdResult ? this.amdResult.toProtobufJSON(options) : null,
+            callId: this.callId,
+            botMuted: this.botMuted,
+            listeningPaused: this.listeningPaused,
+            callAudioStreams: this.callAudioStreams,
+            sipResponseCode: this.sipResponseCode
         };
     }
 }
@@ -1176,6 +1718,7 @@ class SipStatus {
         StatusType[StatusType["MICROPHONE_UNMUTED"] = 19] = "MICROPHONE_UNMUTED";
         StatusType[StatusType["MICROPHONE_WAV_FILES_PLAYED"] = 20] = "MICROPHONE_WAV_FILES_PLAYED";
         StatusType[StatusType["NO_ONGOING_CALL"] = 21] = "NO_ONGOING_CALL";
+        StatusType[StatusType["OUTGOING_CALL_ANSWERING_MACHINE_DETECTED"] = 22] = "OUTGOING_CALL_ANSWERING_MACHINE_DETECTED";
     })(StatusType = SipStatus.StatusType || (SipStatus.StatusType = {}));
     /**
      * Message implementation for ondewo.sip.SipStatus.HeadersEntry
@@ -1399,6 +1942,1226 @@ class SipStatusHistoryResponse {
         };
     }
 }
+/**
+ * Message implementation for ondewo.sip.SipSetCallMediaControlRequest
+ */
+class SipSetCallMediaControlRequest {
+    static { this.id = 'ondewo.sip.SipSetCallMediaControlRequest'; }
+    /**
+     * Deserialize binary data to message
+     * @param instance message instance
+     */
+    static deserializeBinary(bytes) {
+        const instance = new SipSetCallMediaControlRequest();
+        SipSetCallMediaControlRequest.deserializeBinaryFromReader(instance, new BinaryReader(bytes));
+        return instance;
+    }
+    /**
+     * Check all the properties and set default protobuf values if necessary
+     * @param _instance message instance
+     */
+    static refineValues(_instance) {
+        _instance.botVoice = _instance.botVoice || 0;
+        _instance.botListening = _instance.botListening || 0;
+        _instance.owner = _instance.owner || 0;
+        _instance.participantsPresent = _instance.participantsPresent || false;
+    }
+    /**
+     * Deserializes / reads binary message into message instance using provided binary reader
+     * @param _instance message instance
+     * @param _reader binary reader instance
+     */
+    static deserializeBinaryFromReader(_instance, _reader) {
+        while (_reader.nextField()) {
+            if (_reader.isEndGroup())
+                break;
+            switch (_reader.getFieldNumber()) {
+                case 1:
+                    _instance.botVoice = _reader.readEnum();
+                    break;
+                case 2:
+                    _instance.botListening = _reader.readEnum();
+                    break;
+                case 3:
+                    _instance.owner = _reader.readEnum();
+                    break;
+                case 4:
+                    _instance.participantsPresent = _reader.readBool();
+                    break;
+                default:
+                    _reader.skipField();
+            }
+        }
+        SipSetCallMediaControlRequest.refineValues(_instance);
+    }
+    /**
+     * Serializes a message to binary format using provided binary reader
+     * @param _instance message instance
+     * @param _writer binary writer instance
+     */
+    static serializeBinaryToWriter(_instance, _writer) {
+        if (_instance.botVoice) {
+            _writer.writeEnum(1, _instance.botVoice);
+        }
+        if (_instance.botListening) {
+            _writer.writeEnum(2, _instance.botListening);
+        }
+        if (_instance.owner) {
+            _writer.writeEnum(3, _instance.owner);
+        }
+        if (_instance.participantsPresent) {
+            _writer.writeBool(4, _instance.participantsPresent);
+        }
+    }
+    /**
+     * Message constructor. Initializes the properties and applies default Protobuf values if necessary
+     * @param _value initial values object or instance of SipSetCallMediaControlRequest to deeply clone from
+     */
+    constructor(_value) {
+        _value = _value || {};
+        this.botVoice = _value.botVoice;
+        this.botListening = _value.botListening;
+        this.owner = _value.owner;
+        this.participantsPresent = _value.participantsPresent;
+        SipSetCallMediaControlRequest.refineValues(this);
+    }
+    get botVoice() {
+        return this._botVoice;
+    }
+    set botVoice(value) {
+        this._botVoice = value;
+    }
+    get botListening() {
+        return this._botListening;
+    }
+    set botListening(value) {
+        this._botListening = value;
+    }
+    get owner() {
+        return this._owner;
+    }
+    set owner(value) {
+        this._owner = value;
+    }
+    get participantsPresent() {
+        return this._participantsPresent;
+    }
+    set participantsPresent(value) {
+        this._participantsPresent = value;
+    }
+    /**
+     * Serialize message to binary data
+     * @param instance message instance
+     */
+    serializeBinary() {
+        const writer = new BinaryWriter();
+        SipSetCallMediaControlRequest.serializeBinaryToWriter(this, writer);
+        return writer.getResultBuffer();
+    }
+    /**
+     * Cast message to standard JavaScript object (all non-primitive values are deeply cloned)
+     */
+    toObject() {
+        return {
+            botVoice: this.botVoice,
+            botListening: this.botListening,
+            owner: this.owner,
+            participantsPresent: this.participantsPresent
+        };
+    }
+    /**
+     * Convenience method to support JSON.stringify(message), replicates the structure of toObject()
+     */
+    toJSON() {
+        return this.toObject();
+    }
+    /**
+     * Cast message to JSON using protobuf JSON notation: https://developers.google.com/protocol-buffers/docs/proto3#json
+     * Attention: output differs from toObject() e.g. enums are represented as names and not as numbers, Timestamp is an ISO Date string format etc.
+     * If the message itself or some of descendant messages is google.protobuf.Any, you MUST provide a message pool as options. If not, the messagePool is not required
+     */
+    toProtobufJSON(
+    // @ts-ignore
+    options) {
+        return {
+            botVoice: MediaControlSetting[this.botVoice === null || this.botVoice === undefined
+                ? 0
+                : this.botVoice],
+            botListening: MediaControlSetting[this.botListening === null || this.botListening === undefined
+                ? 0
+                : this.botListening],
+            owner: MediaControlOwner[this.owner === null || this.owner === undefined ? 0 : this.owner],
+            participantsPresent: this.participantsPresent
+        };
+    }
+}
+/**
+ * Message implementation for ondewo.sip.SipCallAudioConfig
+ */
+class SipCallAudioConfig {
+    static { this.id = 'ondewo.sip.SipCallAudioConfig'; }
+    /**
+     * Deserialize binary data to message
+     * @param instance message instance
+     */
+    static deserializeBinary(bytes) {
+        const instance = new SipCallAudioConfig();
+        SipCallAudioConfig.deserializeBinaryFromReader(instance, new BinaryReader(bytes));
+        return instance;
+    }
+    /**
+     * Check all the properties and set default protobuf values if necessary
+     * @param _instance message instance
+     */
+    static refineValues(_instance) {
+        _instance.mode = _instance.mode || 0;
+        _instance.sampleRateHz = _instance.sampleRateHz || 0;
+        _instance.frameMs = _instance.frameMs || 0;
+        _instance.takeOver = _instance.takeOver || false;
+        _instance.streamId = _instance.streamId || '';
+        _instance.maxDurationS = _instance.maxDurationS || 0;
+    }
+    /**
+     * Deserializes / reads binary message into message instance using provided binary reader
+     * @param _instance message instance
+     * @param _reader binary reader instance
+     */
+    static deserializeBinaryFromReader(_instance, _reader) {
+        while (_reader.nextField()) {
+            if (_reader.isEndGroup())
+                break;
+            switch (_reader.getFieldNumber()) {
+                case 1:
+                    _instance.mode = _reader.readEnum();
+                    break;
+                case 2:
+                    _instance.sampleRateHz = _reader.readInt32();
+                    break;
+                case 3:
+                    _instance.frameMs = _reader.readInt32();
+                    break;
+                case 4:
+                    _instance.takeOver = _reader.readBool();
+                    break;
+                case 5:
+                    _instance.streamId = _reader.readString();
+                    break;
+                case 6:
+                    _instance.maxDurationS = _reader.readInt32();
+                    break;
+                default:
+                    _reader.skipField();
+            }
+        }
+        SipCallAudioConfig.refineValues(_instance);
+    }
+    /**
+     * Serializes a message to binary format using provided binary reader
+     * @param _instance message instance
+     * @param _writer binary writer instance
+     */
+    static serializeBinaryToWriter(_instance, _writer) {
+        if (_instance.mode) {
+            _writer.writeEnum(1, _instance.mode);
+        }
+        if (_instance.sampleRateHz) {
+            _writer.writeInt32(2, _instance.sampleRateHz);
+        }
+        if (_instance.frameMs) {
+            _writer.writeInt32(3, _instance.frameMs);
+        }
+        if (_instance.takeOver) {
+            _writer.writeBool(4, _instance.takeOver);
+        }
+        if (_instance.streamId) {
+            _writer.writeString(5, _instance.streamId);
+        }
+        if (_instance.maxDurationS) {
+            _writer.writeInt32(6, _instance.maxDurationS);
+        }
+    }
+    /**
+     * Message constructor. Initializes the properties and applies default Protobuf values if necessary
+     * @param _value initial values object or instance of SipCallAudioConfig to deeply clone from
+     */
+    constructor(_value) {
+        _value = _value || {};
+        this.mode = _value.mode;
+        this.sampleRateHz = _value.sampleRateHz;
+        this.frameMs = _value.frameMs;
+        this.takeOver = _value.takeOver;
+        this.streamId = _value.streamId;
+        this.maxDurationS = _value.maxDurationS;
+        SipCallAudioConfig.refineValues(this);
+    }
+    get mode() {
+        return this._mode;
+    }
+    set mode(value) {
+        this._mode = value;
+    }
+    get sampleRateHz() {
+        return this._sampleRateHz;
+    }
+    set sampleRateHz(value) {
+        this._sampleRateHz = value;
+    }
+    get frameMs() {
+        return this._frameMs;
+    }
+    set frameMs(value) {
+        this._frameMs = value;
+    }
+    get takeOver() {
+        return this._takeOver;
+    }
+    set takeOver(value) {
+        this._takeOver = value;
+    }
+    get streamId() {
+        return this._streamId;
+    }
+    set streamId(value) {
+        this._streamId = value;
+    }
+    get maxDurationS() {
+        return this._maxDurationS;
+    }
+    set maxDurationS(value) {
+        this._maxDurationS = value;
+    }
+    /**
+     * Serialize message to binary data
+     * @param instance message instance
+     */
+    serializeBinary() {
+        const writer = new BinaryWriter();
+        SipCallAudioConfig.serializeBinaryToWriter(this, writer);
+        return writer.getResultBuffer();
+    }
+    /**
+     * Cast message to standard JavaScript object (all non-primitive values are deeply cloned)
+     */
+    toObject() {
+        return {
+            mode: this.mode,
+            sampleRateHz: this.sampleRateHz,
+            frameMs: this.frameMs,
+            takeOver: this.takeOver,
+            streamId: this.streamId,
+            maxDurationS: this.maxDurationS
+        };
+    }
+    /**
+     * Convenience method to support JSON.stringify(message), replicates the structure of toObject()
+     */
+    toJSON() {
+        return this.toObject();
+    }
+    /**
+     * Cast message to JSON using protobuf JSON notation: https://developers.google.com/protocol-buffers/docs/proto3#json
+     * Attention: output differs from toObject() e.g. enums are represented as names and not as numbers, Timestamp is an ISO Date string format etc.
+     * If the message itself or some of descendant messages is google.protobuf.Any, you MUST provide a message pool as options. If not, the messagePool is not required
+     */
+    toProtobufJSON(
+    // @ts-ignore
+    options) {
+        return {
+            mode: SipCallAudioMode[this.mode === null || this.mode === undefined ? 0 : this.mode],
+            sampleRateHz: this.sampleRateHz,
+            frameMs: this.frameMs,
+            takeOver: this.takeOver,
+            streamId: this.streamId,
+            maxDurationS: this.maxDurationS
+        };
+    }
+}
+/**
+ * Message implementation for ondewo.sip.SipCallAudioFrame
+ */
+class SipCallAudioFrame {
+    static { this.id = 'ondewo.sip.SipCallAudioFrame'; }
+    /**
+     * Deserialize binary data to message
+     * @param instance message instance
+     */
+    static deserializeBinary(bytes) {
+        const instance = new SipCallAudioFrame();
+        SipCallAudioFrame.deserializeBinaryFromReader(instance, new BinaryReader(bytes));
+        return instance;
+    }
+    /**
+     * Check all the properties and set default protobuf values if necessary
+     * @param _instance message instance
+     */
+    static refineValues(_instance) {
+        _instance.pcmS16le = _instance.pcmS16le || new Uint8Array();
+        _instance.sequence = _instance.sequence || '0';
+    }
+    /**
+     * Deserializes / reads binary message into message instance using provided binary reader
+     * @param _instance message instance
+     * @param _reader binary reader instance
+     */
+    static deserializeBinaryFromReader(_instance, _reader) {
+        while (_reader.nextField()) {
+            if (_reader.isEndGroup())
+                break;
+            switch (_reader.getFieldNumber()) {
+                case 1:
+                    _instance.pcmS16le = _reader.readBytes();
+                    break;
+                case 2:
+                    _instance.sequence = _reader.readUint64String();
+                    break;
+                default:
+                    _reader.skipField();
+            }
+        }
+        SipCallAudioFrame.refineValues(_instance);
+    }
+    /**
+     * Serializes a message to binary format using provided binary reader
+     * @param _instance message instance
+     * @param _writer binary writer instance
+     */
+    static serializeBinaryToWriter(_instance, _writer) {
+        if (_instance.pcmS16le && _instance.pcmS16le.length) {
+            _writer.writeBytes(1, _instance.pcmS16le);
+        }
+        if (_instance.sequence) {
+            _writer.writeUint64String(2, _instance.sequence);
+        }
+    }
+    /**
+     * Message constructor. Initializes the properties and applies default Protobuf values if necessary
+     * @param _value initial values object or instance of SipCallAudioFrame to deeply clone from
+     */
+    constructor(_value) {
+        _value = _value || {};
+        this.pcmS16le = _value.pcmS16le;
+        this.sequence = _value.sequence;
+        SipCallAudioFrame.refineValues(this);
+    }
+    get pcmS16le() {
+        return this._pcmS16le;
+    }
+    set pcmS16le(value) {
+        this._pcmS16le = value;
+    }
+    get sequence() {
+        return this._sequence;
+    }
+    set sequence(value) {
+        this._sequence = value;
+    }
+    /**
+     * Serialize message to binary data
+     * @param instance message instance
+     */
+    serializeBinary() {
+        const writer = new BinaryWriter();
+        SipCallAudioFrame.serializeBinaryToWriter(this, writer);
+        return writer.getResultBuffer();
+    }
+    /**
+     * Cast message to standard JavaScript object (all non-primitive values are deeply cloned)
+     */
+    toObject() {
+        return {
+            pcmS16le: this.pcmS16le ? this.pcmS16le.subarray(0) : new Uint8Array(),
+            sequence: this.sequence
+        };
+    }
+    /**
+     * Convenience method to support JSON.stringify(message), replicates the structure of toObject()
+     */
+    toJSON() {
+        return this.toObject();
+    }
+    /**
+     * Cast message to JSON using protobuf JSON notation: https://developers.google.com/protocol-buffers/docs/proto3#json
+     * Attention: output differs from toObject() e.g. enums are represented as names and not as numbers, Timestamp is an ISO Date string format etc.
+     * If the message itself or some of descendant messages is google.protobuf.Any, you MUST provide a message pool as options. If not, the messagePool is not required
+     */
+    toProtobufJSON(
+    // @ts-ignore
+    options) {
+        return {
+            pcmS16le: this.pcmS16le ? uint8ArrayToBase64(this.pcmS16le) : '',
+            sequence: this.sequence
+        };
+    }
+}
+/**
+ * Message implementation for ondewo.sip.SipCallAudioRequest
+ */
+class SipCallAudioRequest {
+    static { this.id = 'ondewo.sip.SipCallAudioRequest'; }
+    /**
+     * Deserialize binary data to message
+     * @param instance message instance
+     */
+    static deserializeBinary(bytes) {
+        const instance = new SipCallAudioRequest();
+        SipCallAudioRequest.deserializeBinaryFromReader(instance, new BinaryReader(bytes));
+        return instance;
+    }
+    /**
+     * Check all the properties and set default protobuf values if necessary
+     * @param _instance message instance
+     */
+    static refineValues(_instance) { }
+    /**
+     * Deserializes / reads binary message into message instance using provided binary reader
+     * @param _instance message instance
+     * @param _reader binary reader instance
+     */
+    static deserializeBinaryFromReader(_instance, _reader) {
+        while (_reader.nextField()) {
+            if (_reader.isEndGroup())
+                break;
+            switch (_reader.getFieldNumber()) {
+                case 1:
+                    _instance.config = new SipCallAudioConfig();
+                    _reader.readMessage(_instance.config, SipCallAudioConfig.deserializeBinaryFromReader);
+                    break;
+                case 2:
+                    _instance.audio = new SipCallAudioFrame();
+                    _reader.readMessage(_instance.audio, SipCallAudioFrame.deserializeBinaryFromReader);
+                    break;
+                case 3:
+                    _instance.agentMuted = _reader.readBool();
+                    break;
+                default:
+                    _reader.skipField();
+            }
+        }
+        SipCallAudioRequest.refineValues(_instance);
+    }
+    /**
+     * Serializes a message to binary format using provided binary reader
+     * @param _instance message instance
+     * @param _writer binary writer instance
+     */
+    static serializeBinaryToWriter(_instance, _writer) {
+        if (_instance.config) {
+            _writer.writeMessage(1, _instance.config, SipCallAudioConfig.serializeBinaryToWriter);
+        }
+        if (_instance.audio) {
+            _writer.writeMessage(2, _instance.audio, SipCallAudioFrame.serializeBinaryToWriter);
+        }
+        if (_instance.agentMuted || _instance.agentMuted === false) {
+            _writer.writeBool(3, _instance.agentMuted);
+        }
+    }
+    /**
+     * Message constructor. Initializes the properties and applies default Protobuf values if necessary
+     * @param _value initial values object or instance of SipCallAudioRequest to deeply clone from
+     */
+    constructor(_value) {
+        this._request = SipCallAudioRequest.RequestCase.none;
+        _value = _value || {};
+        this.config = _value.config
+            ? new SipCallAudioConfig(_value.config)
+            : undefined;
+        this.audio = _value.audio ? new SipCallAudioFrame(_value.audio) : undefined;
+        this.agentMuted = _value.agentMuted;
+        SipCallAudioRequest.refineValues(this);
+    }
+    get config() {
+        return this._config;
+    }
+    set config(value) {
+        if (value !== undefined && value !== null) {
+            this._audio = this._agentMuted = undefined;
+            this._request = SipCallAudioRequest.RequestCase.config;
+        }
+        this._config = value;
+    }
+    get audio() {
+        return this._audio;
+    }
+    set audio(value) {
+        if (value !== undefined && value !== null) {
+            this._config = this._agentMuted = undefined;
+            this._request = SipCallAudioRequest.RequestCase.audio;
+        }
+        this._audio = value;
+    }
+    get agentMuted() {
+        return this._agentMuted;
+    }
+    set agentMuted(value) {
+        if (value !== undefined && value !== null) {
+            this._config = this._audio = undefined;
+            this._request = SipCallAudioRequest.RequestCase.agentMuted;
+        }
+        this._agentMuted = value;
+    }
+    get request() {
+        return this._request;
+    }
+    /**
+     * Serialize message to binary data
+     * @param instance message instance
+     */
+    serializeBinary() {
+        const writer = new BinaryWriter();
+        SipCallAudioRequest.serializeBinaryToWriter(this, writer);
+        return writer.getResultBuffer();
+    }
+    /**
+     * Cast message to standard JavaScript object (all non-primitive values are deeply cloned)
+     */
+    toObject() {
+        return {
+            config: this.config ? this.config.toObject() : undefined,
+            audio: this.audio ? this.audio.toObject() : undefined,
+            agentMuted: this.agentMuted
+        };
+    }
+    /**
+     * Convenience method to support JSON.stringify(message), replicates the structure of toObject()
+     */
+    toJSON() {
+        return this.toObject();
+    }
+    /**
+     * Cast message to JSON using protobuf JSON notation: https://developers.google.com/protocol-buffers/docs/proto3#json
+     * Attention: output differs from toObject() e.g. enums are represented as names and not as numbers, Timestamp is an ISO Date string format etc.
+     * If the message itself or some of descendant messages is google.protobuf.Any, you MUST provide a message pool as options. If not, the messagePool is not required
+     */
+    toProtobufJSON(
+    // @ts-ignore
+    options) {
+        return {
+            config: this.config ? this.config.toProtobufJSON(options) : null,
+            audio: this.audio ? this.audio.toProtobufJSON(options) : null,
+            agentMuted: this.agentMuted
+        };
+    }
+}
+(function (SipCallAudioRequest) {
+    let RequestCase;
+    (function (RequestCase) {
+        RequestCase[RequestCase["none"] = 0] = "none";
+        RequestCase[RequestCase["config"] = 1] = "config";
+        RequestCase[RequestCase["audio"] = 2] = "audio";
+        RequestCase[RequestCase["agentMuted"] = 3] = "agentMuted";
+    })(RequestCase = SipCallAudioRequest.RequestCase || (SipCallAudioRequest.RequestCase = {}));
+})(SipCallAudioRequest || (SipCallAudioRequest = {}));
+/**
+ * Message implementation for ondewo.sip.SipCallAudioStarted
+ */
+class SipCallAudioStarted {
+    static { this.id = 'ondewo.sip.SipCallAudioStarted'; }
+    /**
+     * Deserialize binary data to message
+     * @param instance message instance
+     */
+    static deserializeBinary(bytes) {
+        const instance = new SipCallAudioStarted();
+        SipCallAudioStarted.deserializeBinaryFromReader(instance, new BinaryReader(bytes));
+        return instance;
+    }
+    /**
+     * Check all the properties and set default protobuf values if necessary
+     * @param _instance message instance
+     */
+    static refineValues(_instance) {
+        _instance.streamId = _instance.streamId || '';
+        _instance.sampleRateHz = _instance.sampleRateHz || 0;
+        _instance.frameMs = _instance.frameMs || 0;
+        _instance.mode = _instance.mode || 0;
+    }
+    /**
+     * Deserializes / reads binary message into message instance using provided binary reader
+     * @param _instance message instance
+     * @param _reader binary reader instance
+     */
+    static deserializeBinaryFromReader(_instance, _reader) {
+        while (_reader.nextField()) {
+            if (_reader.isEndGroup())
+                break;
+            switch (_reader.getFieldNumber()) {
+                case 1:
+                    _instance.streamId = _reader.readString();
+                    break;
+                case 2:
+                    _instance.sampleRateHz = _reader.readInt32();
+                    break;
+                case 3:
+                    _instance.frameMs = _reader.readInt32();
+                    break;
+                case 4:
+                    _instance.mode = _reader.readEnum();
+                    break;
+                default:
+                    _reader.skipField();
+            }
+        }
+        SipCallAudioStarted.refineValues(_instance);
+    }
+    /**
+     * Serializes a message to binary format using provided binary reader
+     * @param _instance message instance
+     * @param _writer binary writer instance
+     */
+    static serializeBinaryToWriter(_instance, _writer) {
+        if (_instance.streamId) {
+            _writer.writeString(1, _instance.streamId);
+        }
+        if (_instance.sampleRateHz) {
+            _writer.writeInt32(2, _instance.sampleRateHz);
+        }
+        if (_instance.frameMs) {
+            _writer.writeInt32(3, _instance.frameMs);
+        }
+        if (_instance.mode) {
+            _writer.writeEnum(4, _instance.mode);
+        }
+    }
+    /**
+     * Message constructor. Initializes the properties and applies default Protobuf values if necessary
+     * @param _value initial values object or instance of SipCallAudioStarted to deeply clone from
+     */
+    constructor(_value) {
+        _value = _value || {};
+        this.streamId = _value.streamId;
+        this.sampleRateHz = _value.sampleRateHz;
+        this.frameMs = _value.frameMs;
+        this.mode = _value.mode;
+        SipCallAudioStarted.refineValues(this);
+    }
+    get streamId() {
+        return this._streamId;
+    }
+    set streamId(value) {
+        this._streamId = value;
+    }
+    get sampleRateHz() {
+        return this._sampleRateHz;
+    }
+    set sampleRateHz(value) {
+        this._sampleRateHz = value;
+    }
+    get frameMs() {
+        return this._frameMs;
+    }
+    set frameMs(value) {
+        this._frameMs = value;
+    }
+    get mode() {
+        return this._mode;
+    }
+    set mode(value) {
+        this._mode = value;
+    }
+    /**
+     * Serialize message to binary data
+     * @param instance message instance
+     */
+    serializeBinary() {
+        const writer = new BinaryWriter();
+        SipCallAudioStarted.serializeBinaryToWriter(this, writer);
+        return writer.getResultBuffer();
+    }
+    /**
+     * Cast message to standard JavaScript object (all non-primitive values are deeply cloned)
+     */
+    toObject() {
+        return {
+            streamId: this.streamId,
+            sampleRateHz: this.sampleRateHz,
+            frameMs: this.frameMs,
+            mode: this.mode
+        };
+    }
+    /**
+     * Convenience method to support JSON.stringify(message), replicates the structure of toObject()
+     */
+    toJSON() {
+        return this.toObject();
+    }
+    /**
+     * Cast message to JSON using protobuf JSON notation: https://developers.google.com/protocol-buffers/docs/proto3#json
+     * Attention: output differs from toObject() e.g. enums are represented as names and not as numbers, Timestamp is an ISO Date string format etc.
+     * If the message itself or some of descendant messages is google.protobuf.Any, you MUST provide a message pool as options. If not, the messagePool is not required
+     */
+    toProtobufJSON(
+    // @ts-ignore
+    options) {
+        return {
+            streamId: this.streamId,
+            sampleRateHz: this.sampleRateHz,
+            frameMs: this.frameMs,
+            mode: SipCallAudioMode[this.mode === null || this.mode === undefined ? 0 : this.mode]
+        };
+    }
+}
+/**
+ * Message implementation for ondewo.sip.SipCallAudioStats
+ */
+class SipCallAudioStats {
+    static { this.id = 'ondewo.sip.SipCallAudioStats'; }
+    /**
+     * Deserialize binary data to message
+     * @param instance message instance
+     */
+    static deserializeBinary(bytes) {
+        const instance = new SipCallAudioStats();
+        SipCallAudioStats.deserializeBinaryFromReader(instance, new BinaryReader(bytes));
+        return instance;
+    }
+    /**
+     * Check all the properties and set default protobuf values if necessary
+     * @param _instance message instance
+     */
+    static refineValues(_instance) {
+        _instance.framesSent = _instance.framesSent || '0';
+        _instance.framesDropped = _instance.framesDropped || '0';
+        _instance.framesReceived = _instance.framesReceived || '0';
+        _instance.underruns = _instance.underruns || '0';
+        _instance.framesDiscarded = _instance.framesDiscarded || '0';
+    }
+    /**
+     * Deserializes / reads binary message into message instance using provided binary reader
+     * @param _instance message instance
+     * @param _reader binary reader instance
+     */
+    static deserializeBinaryFromReader(_instance, _reader) {
+        while (_reader.nextField()) {
+            if (_reader.isEndGroup())
+                break;
+            switch (_reader.getFieldNumber()) {
+                case 1:
+                    _instance.framesSent = _reader.readUint64String();
+                    break;
+                case 2:
+                    _instance.framesDropped = _reader.readUint64String();
+                    break;
+                case 3:
+                    _instance.framesReceived = _reader.readUint64String();
+                    break;
+                case 4:
+                    _instance.underruns = _reader.readUint64String();
+                    break;
+                case 5:
+                    _instance.framesDiscarded = _reader.readUint64String();
+                    break;
+                default:
+                    _reader.skipField();
+            }
+        }
+        SipCallAudioStats.refineValues(_instance);
+    }
+    /**
+     * Serializes a message to binary format using provided binary reader
+     * @param _instance message instance
+     * @param _writer binary writer instance
+     */
+    static serializeBinaryToWriter(_instance, _writer) {
+        if (_instance.framesSent) {
+            _writer.writeUint64String(1, _instance.framesSent);
+        }
+        if (_instance.framesDropped) {
+            _writer.writeUint64String(2, _instance.framesDropped);
+        }
+        if (_instance.framesReceived) {
+            _writer.writeUint64String(3, _instance.framesReceived);
+        }
+        if (_instance.underruns) {
+            _writer.writeUint64String(4, _instance.underruns);
+        }
+        if (_instance.framesDiscarded) {
+            _writer.writeUint64String(5, _instance.framesDiscarded);
+        }
+    }
+    /**
+     * Message constructor. Initializes the properties and applies default Protobuf values if necessary
+     * @param _value initial values object or instance of SipCallAudioStats to deeply clone from
+     */
+    constructor(_value) {
+        _value = _value || {};
+        this.framesSent = _value.framesSent;
+        this.framesDropped = _value.framesDropped;
+        this.framesReceived = _value.framesReceived;
+        this.underruns = _value.underruns;
+        this.framesDiscarded = _value.framesDiscarded;
+        SipCallAudioStats.refineValues(this);
+    }
+    get framesSent() {
+        return this._framesSent;
+    }
+    set framesSent(value) {
+        this._framesSent = value;
+    }
+    get framesDropped() {
+        return this._framesDropped;
+    }
+    set framesDropped(value) {
+        this._framesDropped = value;
+    }
+    get framesReceived() {
+        return this._framesReceived;
+    }
+    set framesReceived(value) {
+        this._framesReceived = value;
+    }
+    get underruns() {
+        return this._underruns;
+    }
+    set underruns(value) {
+        this._underruns = value;
+    }
+    get framesDiscarded() {
+        return this._framesDiscarded;
+    }
+    set framesDiscarded(value) {
+        this._framesDiscarded = value;
+    }
+    /**
+     * Serialize message to binary data
+     * @param instance message instance
+     */
+    serializeBinary() {
+        const writer = new BinaryWriter();
+        SipCallAudioStats.serializeBinaryToWriter(this, writer);
+        return writer.getResultBuffer();
+    }
+    /**
+     * Cast message to standard JavaScript object (all non-primitive values are deeply cloned)
+     */
+    toObject() {
+        return {
+            framesSent: this.framesSent,
+            framesDropped: this.framesDropped,
+            framesReceived: this.framesReceived,
+            underruns: this.underruns,
+            framesDiscarded: this.framesDiscarded
+        };
+    }
+    /**
+     * Convenience method to support JSON.stringify(message), replicates the structure of toObject()
+     */
+    toJSON() {
+        return this.toObject();
+    }
+    /**
+     * Cast message to JSON using protobuf JSON notation: https://developers.google.com/protocol-buffers/docs/proto3#json
+     * Attention: output differs from toObject() e.g. enums are represented as names and not as numbers, Timestamp is an ISO Date string format etc.
+     * If the message itself or some of descendant messages is google.protobuf.Any, you MUST provide a message pool as options. If not, the messagePool is not required
+     */
+    toProtobufJSON(
+    // @ts-ignore
+    options) {
+        return {
+            framesSent: this.framesSent,
+            framesDropped: this.framesDropped,
+            framesReceived: this.framesReceived,
+            underruns: this.underruns,
+            framesDiscarded: this.framesDiscarded
+        };
+    }
+}
+/**
+ * Message implementation for ondewo.sip.SipCallAudioEnded
+ */
+class SipCallAudioEnded {
+    static { this.id = 'ondewo.sip.SipCallAudioEnded'; }
+    /**
+     * Deserialize binary data to message
+     * @param instance message instance
+     */
+    static deserializeBinary(bytes) {
+        const instance = new SipCallAudioEnded();
+        SipCallAudioEnded.deserializeBinaryFromReader(instance, new BinaryReader(bytes));
+        return instance;
+    }
+    /**
+     * Check all the properties and set default protobuf values if necessary
+     * @param _instance message instance
+     */
+    static refineValues(_instance) {
+        _instance.reason = _instance.reason || 0;
+        _instance.detail = _instance.detail || '';
+    }
+    /**
+     * Deserializes / reads binary message into message instance using provided binary reader
+     * @param _instance message instance
+     * @param _reader binary reader instance
+     */
+    static deserializeBinaryFromReader(_instance, _reader) {
+        while (_reader.nextField()) {
+            if (_reader.isEndGroup())
+                break;
+            switch (_reader.getFieldNumber()) {
+                case 1:
+                    _instance.reason = _reader.readEnum();
+                    break;
+                case 2:
+                    _instance.detail = _reader.readString();
+                    break;
+                default:
+                    _reader.skipField();
+            }
+        }
+        SipCallAudioEnded.refineValues(_instance);
+    }
+    /**
+     * Serializes a message to binary format using provided binary reader
+     * @param _instance message instance
+     * @param _writer binary writer instance
+     */
+    static serializeBinaryToWriter(_instance, _writer) {
+        if (_instance.reason) {
+            _writer.writeEnum(1, _instance.reason);
+        }
+        if (_instance.detail) {
+            _writer.writeString(2, _instance.detail);
+        }
+    }
+    /**
+     * Message constructor. Initializes the properties and applies default Protobuf values if necessary
+     * @param _value initial values object or instance of SipCallAudioEnded to deeply clone from
+     */
+    constructor(_value) {
+        _value = _value || {};
+        this.reason = _value.reason;
+        this.detail = _value.detail;
+        SipCallAudioEnded.refineValues(this);
+    }
+    get reason() {
+        return this._reason;
+    }
+    set reason(value) {
+        this._reason = value;
+    }
+    get detail() {
+        return this._detail;
+    }
+    set detail(value) {
+        this._detail = value;
+    }
+    /**
+     * Serialize message to binary data
+     * @param instance message instance
+     */
+    serializeBinary() {
+        const writer = new BinaryWriter();
+        SipCallAudioEnded.serializeBinaryToWriter(this, writer);
+        return writer.getResultBuffer();
+    }
+    /**
+     * Cast message to standard JavaScript object (all non-primitive values are deeply cloned)
+     */
+    toObject() {
+        return {
+            reason: this.reason,
+            detail: this.detail
+        };
+    }
+    /**
+     * Convenience method to support JSON.stringify(message), replicates the structure of toObject()
+     */
+    toJSON() {
+        return this.toObject();
+    }
+    /**
+     * Cast message to JSON using protobuf JSON notation: https://developers.google.com/protocol-buffers/docs/proto3#json
+     * Attention: output differs from toObject() e.g. enums are represented as names and not as numbers, Timestamp is an ISO Date string format etc.
+     * If the message itself or some of descendant messages is google.protobuf.Any, you MUST provide a message pool as options. If not, the messagePool is not required
+     */
+    toProtobufJSON(
+    // @ts-ignore
+    options) {
+        return {
+            reason: SipCallAudioEndReason[this.reason === null || this.reason === undefined ? 0 : this.reason],
+            detail: this.detail
+        };
+    }
+}
+/**
+ * Message implementation for ondewo.sip.SipCallAudioResponse
+ */
+class SipCallAudioResponse {
+    static { this.id = 'ondewo.sip.SipCallAudioResponse'; }
+    /**
+     * Deserialize binary data to message
+     * @param instance message instance
+     */
+    static deserializeBinary(bytes) {
+        const instance = new SipCallAudioResponse();
+        SipCallAudioResponse.deserializeBinaryFromReader(instance, new BinaryReader(bytes));
+        return instance;
+    }
+    /**
+     * Check all the properties and set default protobuf values if necessary
+     * @param _instance message instance
+     */
+    static refineValues(_instance) { }
+    /**
+     * Deserializes / reads binary message into message instance using provided binary reader
+     * @param _instance message instance
+     * @param _reader binary reader instance
+     */
+    static deserializeBinaryFromReader(_instance, _reader) {
+        while (_reader.nextField()) {
+            if (_reader.isEndGroup())
+                break;
+            switch (_reader.getFieldNumber()) {
+                case 1:
+                    _instance.started = new SipCallAudioStarted();
+                    _reader.readMessage(_instance.started, SipCallAudioStarted.deserializeBinaryFromReader);
+                    break;
+                case 2:
+                    _instance.audio = new SipCallAudioFrame();
+                    _reader.readMessage(_instance.audio, SipCallAudioFrame.deserializeBinaryFromReader);
+                    break;
+                case 3:
+                    _instance.stats = new SipCallAudioStats();
+                    _reader.readMessage(_instance.stats, SipCallAudioStats.deserializeBinaryFromReader);
+                    break;
+                case 4:
+                    _instance.ended = new SipCallAudioEnded();
+                    _reader.readMessage(_instance.ended, SipCallAudioEnded.deserializeBinaryFromReader);
+                    break;
+                default:
+                    _reader.skipField();
+            }
+        }
+        SipCallAudioResponse.refineValues(_instance);
+    }
+    /**
+     * Serializes a message to binary format using provided binary reader
+     * @param _instance message instance
+     * @param _writer binary writer instance
+     */
+    static serializeBinaryToWriter(_instance, _writer) {
+        if (_instance.started) {
+            _writer.writeMessage(1, _instance.started, SipCallAudioStarted.serializeBinaryToWriter);
+        }
+        if (_instance.audio) {
+            _writer.writeMessage(2, _instance.audio, SipCallAudioFrame.serializeBinaryToWriter);
+        }
+        if (_instance.stats) {
+            _writer.writeMessage(3, _instance.stats, SipCallAudioStats.serializeBinaryToWriter);
+        }
+        if (_instance.ended) {
+            _writer.writeMessage(4, _instance.ended, SipCallAudioEnded.serializeBinaryToWriter);
+        }
+    }
+    /**
+     * Message constructor. Initializes the properties and applies default Protobuf values if necessary
+     * @param _value initial values object or instance of SipCallAudioResponse to deeply clone from
+     */
+    constructor(_value) {
+        this._response = SipCallAudioResponse.ResponseCase.none;
+        _value = _value || {};
+        this.started = _value.started
+            ? new SipCallAudioStarted(_value.started)
+            : undefined;
+        this.audio = _value.audio ? new SipCallAudioFrame(_value.audio) : undefined;
+        this.stats = _value.stats ? new SipCallAudioStats(_value.stats) : undefined;
+        this.ended = _value.ended ? new SipCallAudioEnded(_value.ended) : undefined;
+        SipCallAudioResponse.refineValues(this);
+    }
+    get started() {
+        return this._started;
+    }
+    set started(value) {
+        if (value !== undefined && value !== null) {
+            this._audio = this._stats = this._ended = undefined;
+            this._response = SipCallAudioResponse.ResponseCase.started;
+        }
+        this._started = value;
+    }
+    get audio() {
+        return this._audio;
+    }
+    set audio(value) {
+        if (value !== undefined && value !== null) {
+            this._started = this._stats = this._ended = undefined;
+            this._response = SipCallAudioResponse.ResponseCase.audio;
+        }
+        this._audio = value;
+    }
+    get stats() {
+        return this._stats;
+    }
+    set stats(value) {
+        if (value !== undefined && value !== null) {
+            this._started = this._audio = this._ended = undefined;
+            this._response = SipCallAudioResponse.ResponseCase.stats;
+        }
+        this._stats = value;
+    }
+    get ended() {
+        return this._ended;
+    }
+    set ended(value) {
+        if (value !== undefined && value !== null) {
+            this._started = this._audio = this._stats = undefined;
+            this._response = SipCallAudioResponse.ResponseCase.ended;
+        }
+        this._ended = value;
+    }
+    get response() {
+        return this._response;
+    }
+    /**
+     * Serialize message to binary data
+     * @param instance message instance
+     */
+    serializeBinary() {
+        const writer = new BinaryWriter();
+        SipCallAudioResponse.serializeBinaryToWriter(this, writer);
+        return writer.getResultBuffer();
+    }
+    /**
+     * Cast message to standard JavaScript object (all non-primitive values are deeply cloned)
+     */
+    toObject() {
+        return {
+            started: this.started ? this.started.toObject() : undefined,
+            audio: this.audio ? this.audio.toObject() : undefined,
+            stats: this.stats ? this.stats.toObject() : undefined,
+            ended: this.ended ? this.ended.toObject() : undefined
+        };
+    }
+    /**
+     * Convenience method to support JSON.stringify(message), replicates the structure of toObject()
+     */
+    toJSON() {
+        return this.toObject();
+    }
+    /**
+     * Cast message to JSON using protobuf JSON notation: https://developers.google.com/protocol-buffers/docs/proto3#json
+     * Attention: output differs from toObject() e.g. enums are represented as names and not as numbers, Timestamp is an ISO Date string format etc.
+     * If the message itself or some of descendant messages is google.protobuf.Any, you MUST provide a message pool as options. If not, the messagePool is not required
+     */
+    toProtobufJSON(
+    // @ts-ignore
+    options) {
+        return {
+            started: this.started ? this.started.toProtobufJSON(options) : null,
+            audio: this.audio ? this.audio.toProtobufJSON(options) : null,
+            stats: this.stats ? this.stats.toProtobufJSON(options) : null,
+            ended: this.ended ? this.ended.toProtobufJSON(options) : null
+        };
+    }
+}
+(function (SipCallAudioResponse) {
+    let ResponseCase;
+    (function (ResponseCase) {
+        ResponseCase[ResponseCase["none"] = 0] = "none";
+        ResponseCase[ResponseCase["started"] = 1] = "started";
+        ResponseCase[ResponseCase["audio"] = 2] = "audio";
+        ResponseCase[ResponseCase["stats"] = 3] = "stats";
+        ResponseCase[ResponseCase["ended"] = 4] = "ended";
+    })(ResponseCase = SipCallAudioResponse.ResponseCase || (SipCallAudioResponse.ResponseCase = {}));
+})(SipCallAudioResponse || (SipCallAudioResponse = {}));
 /**
  * Message implementation for ondewo.sip.SipPlayWavFilesRequest
  */
@@ -1728,6 +3491,60 @@ class SipClient {
                     requestClass: googleProtobuf000.Empty,
                     responseClass: SipStatus
                 });
+            },
+            /**
+             * Unary call: /ondewo.sip.Sip/SipReportAnsweringMachineDetected
+             *
+             * @param requestMessage Request message
+             * @param requestMetadata Request metadata
+             * @returns Observable<GrpcEvent<thisProto.SipStatus>>
+             */
+            sipReportAnsweringMachineDetected: (requestData, requestMetadata = new GrpcMetadata()) => {
+                return this.handler.handle({
+                    type: GrpcCallType.unary,
+                    client: this.client,
+                    path: '/ondewo.sip.Sip/SipReportAnsweringMachineDetected',
+                    requestData,
+                    requestMetadata,
+                    requestClass: SipReportAnsweringMachineDetectedRequest,
+                    responseClass: SipStatus
+                });
+            },
+            /**
+             * Unary call: /ondewo.sip.Sip/SipSetCallMediaControl
+             *
+             * @param requestMessage Request message
+             * @param requestMetadata Request metadata
+             * @returns Observable<GrpcEvent<thisProto.SipStatus>>
+             */
+            sipSetCallMediaControl: (requestData, requestMetadata = new GrpcMetadata()) => {
+                return this.handler.handle({
+                    type: GrpcCallType.unary,
+                    client: this.client,
+                    path: '/ondewo.sip.Sip/SipSetCallMediaControl',
+                    requestData,
+                    requestMetadata,
+                    requestClass: SipSetCallMediaControlRequest,
+                    responseClass: SipStatus
+                });
+            },
+            /**
+             * Bidirectional streaming: /ondewo.sip.Sip/SipStreamCallAudio
+             *
+             * @param requestMessage Request message
+             * @param requestMetadata Request metadata
+             * @returns Observable<GrpcEvent<thisProto.SipCallAudioResponse>>
+             */
+            sipStreamCallAudio: (requestData, requestMetadata = new GrpcMetadata()) => {
+                return this.handler.handle({
+                    type: GrpcCallType.bidiStream,
+                    client: this.client,
+                    path: '/ondewo.sip.Sip/SipStreamCallAudio',
+                    requestData,
+                    requestMetadata,
+                    requestClass: SipCallAudioRequest,
+                    responseClass: SipCallAudioResponse
+                });
             }
         };
         this.client = clientFactory.createClient('ondewo.sip.Sip', settings);
@@ -1862,6 +3679,42 @@ class SipClient {
     sipUnMute(requestData, requestMetadata = new GrpcMetadata()) {
         return this.$raw
             .sipUnMute(requestData, requestMetadata)
+            .pipe(throwStatusErrors(), takeMessages());
+    }
+    /**
+     * Unary call @/ondewo.sip.Sip/SipReportAnsweringMachineDetected
+     *
+     * @param requestMessage Request message
+     * @param requestMetadata Request metadata
+     * @returns Observable<thisProto.SipStatus>
+     */
+    sipReportAnsweringMachineDetected(requestData, requestMetadata = new GrpcMetadata()) {
+        return this.$raw
+            .sipReportAnsweringMachineDetected(requestData, requestMetadata)
+            .pipe(throwStatusErrors(), takeMessages());
+    }
+    /**
+     * Unary call @/ondewo.sip.Sip/SipSetCallMediaControl
+     *
+     * @param requestMessage Request message
+     * @param requestMetadata Request metadata
+     * @returns Observable<thisProto.SipStatus>
+     */
+    sipSetCallMediaControl(requestData, requestMetadata = new GrpcMetadata()) {
+        return this.$raw
+            .sipSetCallMediaControl(requestData, requestMetadata)
+            .pipe(throwStatusErrors(), takeMessages());
+    }
+    /**
+     * Bidirectional streaming @/ondewo.sip.Sip/SipStreamCallAudio
+     *
+     * @param requestMessage Request message
+     * @param requestMetadata Request metadata
+     * @returns Observable<thisProto.SipCallAudioResponse>
+     */
+    sipStreamCallAudio(requestData, requestMetadata = new GrpcMetadata()) {
+        return this.$raw
+            .sipStreamCallAudio(requestData, requestMetadata)
             .pipe(throwStatusErrors(), takeMessages());
     }
     static { this.ɵfac = i0.ɵɵngDeclareFactory({ minVersion: "12.0.0", version: "20.3.33", ngImport: i0, type: SipClient, deps: [{ token: GRPC_SIP_CLIENT_SETTINGS, optional: true }, { token: GRPC_CLIENT_FACTORY }, { token: i1.GrpcHandler }], target: i0.ɵɵFactoryTarget.Injectable }); }
@@ -2626,5 +4479,5 @@ function warnInsecure(authority) {
  * Generated bundle index. Do not edit.
  */
 
-export { AUTHORIZATION_HEADER, AuthGrpcInterceptor, BEARER_PREFIX, BROWSER_UNSUPPORTED_TLS_FIELDS, GRPC_SIP_CLIENT_SETTINGS, GrpcWebEndpointError, KEYCLOAK_TOKEN_PROVIDER_CONFIG, KeycloakAuthenticationError, KeycloakTokenProvider, MIN_REFRESH_DELAY_IN_S, REFRESH_SKEW_IN_S, SipClient, SipEndCallRequest, SipPlayWavFilesRequest, SipRegisterAccountRequest, SipStartCallRequest, SipStartSessionRequest, SipStatus, SipStatusHistoryResponse, SipTransferCallRequest, TOKEN_PROVIDER, authHttpInterceptor, buildBearerValue, buildGrpcWebHost, provideKeycloakTokenProvider, provideOndewoSipAuth, resolveBearerValue, resolveToken };
+export { AUTHORIZATION_HEADER, AnsweringMachineDetectionResult, AuthGrpcInterceptor, BEARER_PREFIX, BROWSER_UNSUPPORTED_TLS_FIELDS, GRPC_SIP_CLIENT_SETTINGS, GrpcWebEndpointError, KEYCLOAK_TOKEN_PROVIDER_CONFIG, KeycloakAuthenticationError, KeycloakTokenProvider, MIN_REFRESH_DELAY_IN_S, MediaControlOwner, MediaControlSetting, REFRESH_SKEW_IN_S, SipCallAudioConfig, SipCallAudioEndReason, SipCallAudioEnded, SipCallAudioFrame, SipCallAudioMode, SipCallAudioRequest, SipCallAudioResponse, SipCallAudioStarted, SipCallAudioStats, SipClient, SipEndCallRequest, SipPlayWavFilesRequest, SipRegisterAccountRequest, SipReportAnsweringMachineDetectedRequest, SipSetCallMediaControlRequest, SipStartCallRequest, SipStartSessionRequest, SipStatus, SipStatusHistoryResponse, SipTransferCallRequest, TOKEN_PROVIDER, authHttpInterceptor, buildBearerValue, buildGrpcWebHost, provideKeycloakTokenProvider, provideOndewoSipAuth, resolveBearerValue, resolveToken };
 //# sourceMappingURL=ondewo-sip-client-angular.mjs.map
