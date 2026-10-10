@@ -2,6 +2,15 @@
 
 *****************
 
+## Release ONDEWO SIP Angular Client 5.5.1
+
+### Bug Fixes
+
+* Removed `SipClient.sipStreamCallAudio` (plain and `$raw`), the method of the bidirectional-streaming RPC `SipStreamCallAudio`, because it never worked in a browser: gRPC-web, the protocol this library speaks, carries unary and server-streaming calls only. Its messages `SipCallAudioRequest` and `SipCallAudioResponse` are still exported, and every other method is unchanged. **Migration:** a client that has to stream call audio uses a native SDK such as `ondewo-sip-client` (python, PyPI) or `@ondewo/sip-client-nodejs`. The js and typescript SDKs never generated this method.
+* Generated with ondewo-proto-compiler [5.15.7](https://github.com/ondewo/ondewo-proto-compiler/releases/tag/5.15.7), which omits client-streaming and bidirectional-streaming methods for the angular target. `src/auth/no-client-streaming.spec.ts` fails if the public typings (`index.d.ts`) expose a method whose request is an `Observable`.
+
+*****************
+
 ## Release ONDEWO SIP Angular Client 5.5.0
 
 ### New Features
