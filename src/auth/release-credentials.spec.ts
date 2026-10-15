@@ -131,7 +131,7 @@ describe('release credentials', (): void => {
 		const recipe: string = recipeOf('ondewo_release');
 		const read: number = recipe.indexOf('grep -h -E');
 		const deleted: number = recipe.indexOf('if [ -n "$$clone" ]; then rm -rf "$$clone"; fi');
-		const released: number = recipe.indexOf('$(MAKE) release');
+		const released: number = recipe.lastIndexOf('$(MAKE) release');
 
 		expect(recipe).toContain('trap \'rm -rf "$$clone"\' EXIT');
 		expect(recipe).toContain('clone=$$(mktemp -d)');
@@ -140,6 +140,15 @@ describe('release credentials', (): void => {
 		expect(released).toBeGreaterThan(deleted);
 		expect(MAKEFILE).not.toMatch(/^clone_devops_accounts:/m);
 		expect(MAKEFILE).not.toMatch(/^run_release_with_devops:/m);
+	});
+
+	/** make runs a line naming $(MAKE) even under `make -n`; a dry run must clone and read nothing. */
+	it('are neither cloned nor read by a dry run', (): void => {
+		const recipe: string = recipeOf('ondewo_release');
+		const dryRun: number = recipe.indexOf('if test -n "$(findstring n,$(firstword -$(MAKEFLAGS)))"; then');
+		expect(dryRun).toBeGreaterThan(0);
+		expect(recipe.indexOf('exit 0;', dryRun)).toBeLessThan(recipe.indexOf('git clone'));
+		expect(recipe.indexOf('exit 0;', dryRun)).toBeLessThan(recipe.indexOf('grep -h -E'));
 	});
 
 	/** The driver clones the accounts once for all clients and hands the directory over. */
