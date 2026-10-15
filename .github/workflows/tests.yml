@@ -1,10 +1,12 @@
 name: tests
 
 on:
+  # Every branch (master, release/**, feature/**, ticket branches), and every tag.
   push:
     branches:
-      - master
-      - 'OND211-**'
+      - '**'
+    tags:
+      - '*'
   pull_request:
     branches:
       - master
@@ -12,23 +14,30 @@ on:
 jobs:
   auth-unit-tests:
     name: Keycloak auth surface unit tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
+      # actions/checkout starts with a bare `git init`, and git then prints a multi-line
+      # "Using 'master' as the name for the initial branch" hint into every job log. Naming the
+      # default up front silences it; master is this repository's default branch anyway.
+      - name: Name git's default branch
+        run: git config --global init.defaultBranch master
+
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           # The ng-packagr layout guard reads "dest" out of the proto compiler's own
-          # ng-package.json, so the submodule holding it has to be on disk.
+          # ng-package.json, and the API-surface specs read the rpc lines of the sip protos,
+          # so both submodules have to be on disk.
           submodules: true
 
-      - name: Set up Node.js 20
-        uses: actions/setup-node@v5
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '24'
 
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund --legacy-peer-deps
+      - name: Install dependencies (exactly the lockfile)
+        run: npm ci --no-audit --no-fund --legacy-peer-deps
 
       - name: Run auth unit tests with coverage (100% gate on auth surface)
         run: npx jest --config jest.config.js --coverage --ci
