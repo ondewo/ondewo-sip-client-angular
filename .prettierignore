@@ -14,6 +14,10 @@ ondewo-sip-api
 ondewo-sip-client-angular.d.ts
 ondewo-sip-client-angular.d.ts.map
 ondewo-sip-client-angular.metadata.json
+# The codegen writes these two and npm ships them; the committed copies must stay byte-equal to what
+# npm receives (make check_tag_matches_package), so the formatter must never rewrite them.
+index.d.ts
+public-api.ts
 package-lock.json
 package.json
 npm/
