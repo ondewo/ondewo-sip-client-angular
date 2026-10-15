@@ -1,14 +1,15 @@
+import { execFileSync } from "child_process";
 import { existsSync, readFileSync } from "fs";
 import { dirname, join } from "path";
 
 /**
  * The GitHub release body is sliced out of RELEASE.md by the Makefile's `CURRENT_RELEASE_NOTES`:
- * `perl -ne 'print if /Release ONDEWO SIP Angular Client ${ONDEWO_SIP_VERSION}/../^\*{5}/'`.
+ * `perl -ne 'print if /^\#+ Release ONDEWO SIP Angular Client \Q${ONDEWO_SIP_VERSION}\E$$/../^\*{5}/'`.
  *
- * The slice starts at the heading naming the version and ends at the next `*****` line. A heading
- * spelled any other way gives an EMPTY slice, and `gh release create -n ""` then publishes a release
- * without notes and without an error; a section without its closing separator runs into the next
- * release's notes.
+ * The slice starts at the heading that names EXACTLY the version (anchored at both ends, the dots
+ * escaped by \Q..\E, so 19.1.0 or 9x1.0 never match 9.1.0) and ends at the next `*****` line. A
+ * heading spelled any other way gives an EMPTY slice, which release_preflight and build_gh_release
+ * refuse; a section without its closing separator runs into the next release's notes.
  */
 
 /**
@@ -37,7 +38,9 @@ const LINES: string[] = RELEASE_NOTES.split(/\r?\n/);
  * @returns the sliced lines, heading and closing separator included; empty when no heading matches.
  */
 function releaseNotesSlice(version: string): string[] {
-  const start: number = LINES.findIndex((line: string): boolean => line.includes(`${SLICE_START} ${version}`));
+  const start: number = LINES.findIndex(
+    (line: string): boolean => /^#+ /.test(line) && line.replace(/^#+ /, "") === `${SLICE_START} ${version}`
+  );
   if (start < 0) {
     return [];
   }
@@ -51,8 +54,50 @@ function releaseNotesSlice(version: string): string[] {
 describe("RELEASE.md release notes", (): void => {
   it("is sliced by the Makefile with the heading and separator pinned here", (): void => {
     expect(MAKEFILE).toContain(
-      "perl -ne 'print if /Release ONDEWO SIP Angular Client " + "${ONDEWO_SIP_VERSION}/../^\\*{5}/'"
+      "perl -ne 'print if /^\\#+ Release ONDEWO SIP Angular Client \\Q" + "${ONDEWO_SIP_VERSION}\\E$$/../^\\*{5}/'"
     );
+  });
+
+  /**
+   * Runs the Makefile's own RELEASE_NOTES_BODY program (make's escapes resolved) against a fixture,
+   * so the anchoring is proven on the expression the release executes, not on a copy of it.
+   */
+  it("selects only the exactly-named, non-empty section with the Makefile expression", (): void => {
+    const definition: string = /^RELEASE_NOTES_BODY=perl -ne '(.*)'$/m.exec(MAKEFILE)?.[1] ?? "";
+    expect(definition).not.toBe("");
+    const fixture: string = [
+      "# Release History",
+      "## Release ONDEWO SIP Angular Client 19.1.0",
+      "wrong: 19.1.0",
+      "prose, not a heading: Release ONDEWO SIP Angular Client 9.2.0",
+      "*****",
+      "## Release ONDEWO SIP Angular Client 9x1.0",
+      "wrong: dots are wildcards",
+      "*****",
+      "## Release ONDEWO SIP Angular Client 9.1.0-rc1",
+      "wrong: not anchored at the end",
+      "*****",
+      "## Release ONDEWO SIP Angular Client 9.1.0",
+      "",
+      "right",
+      "*****",
+      "## Release ONDEWO SIP Angular Client 9.2.0",
+      "",
+      "*****",
+      ""
+    ].join("\n");
+    const body: (version: string) => string = (version: string): string =>
+      String(
+        execFileSync(
+          "perl",
+          ["-ne", definition.replace(/\\#/g, "#").replace(/\$\$/g, "$").replace("${ONDEWO_SIP_VERSION}", version)],
+          { input: fixture }
+        )
+      );
+
+    expect(body("9.1.0")).toBe("right\n");
+    expect(body("9.2.0")).toBe("");
+    expect(body("1.0")).toBe("");
   });
 
   it("spells every release heading the way the Makefile slices it", (): void => {

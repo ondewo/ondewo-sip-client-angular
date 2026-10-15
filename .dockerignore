@@ -1,0 +1,8 @@
+# The build context of Dockerfile.utils is the repository root. Allow-list exactly what it copies, so
+# the devops-accounts clone, node_modules, .git and the submodules can never enter an image.
+*
+!Makefile
+!LICENSE
+!README.md
+!RELEASE.md
+!npm

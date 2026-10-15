@@ -83,15 +83,25 @@ describe("package version", (): void => {
     expect(stamped.sort()).toEqual(["package-lock.json", "package.json", "src/package.json"]);
   });
 
-  it("is re-stamped after install_dependencies restores the committed manifests and before npm install", (): void => {
+  it("is re-stamped after install_dependencies restores the committed manifests and before npm ci", (): void => {
     const commands: string[] = recipeCommands("install_dependencies");
     const restored: number = commands.findIndex((command: string): boolean =>
       command.startsWith("git checkout -- package.json")
     );
     const restamped: number = commands.indexOf("make update_package");
-    const installed: number = commands.findIndex((command: string): boolean => command.includes("npm install"));
+    const installed: number = commands.findIndex((command: string): boolean => command.includes("npm ci "));
     expect(restored).toBeGreaterThanOrEqual(0);
     expect(restamped).toBeGreaterThan(restored);
     expect(installed).toBeGreaterThan(restamped);
+  });
+
+  /**
+   * The build installs exactly the committed lockfile. `npm i --save-dev <tool>` re-resolved eslint and
+   * its plugins on every release and could move them to another major behind the lockfile's back.
+   */
+  it("installs the build's dependencies from the lockfile and never re-resolves a tool", (): void => {
+    expect(
+      recipeCommands("install_dependencies").filter((command: string): boolean => /\bnpm (?:install|i)\b/.test(command))
+    ).toEqual([]);
   });
 });
