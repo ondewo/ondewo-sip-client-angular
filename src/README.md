@@ -191,53 +191,58 @@ The `make build` command is dependent on 2 `repositories` and their speciefied `
 - [ondewo-sip-api](https://github.com/ondewo/ondewo-sip-api) -- `SIP_API_GIT_BRANCH` in `Makefile`
 - [ondewo-proto-compiler](https://github.com/ondewo/ondewo-proto-compiler) -- `ONDEWO_PROTO_COMPILER_GIT_BRANCH` in `Makefile`
 
-Other than creating the proto-code, `build` also installs the `dev-dependencies` and changes the owner of the proto-files from `root` to the `current user`.
+Other than creating the proto-code, `build` also installs the `dev-dependencies` and hands the files the root-run codegen container wrote back to the current user (with a container, not `sudo`).
 
 ## GitHub Repository - Release Automation
 
-The repository is published to GitHub and NPM by the Automated Release Process of ONDEWO.
+The repository is published to npm and GitHub by the automated release process of ONDEWO
+(`make release_all_clients` in [ondewo-sip-api](https://github.com/ondewo/ondewo-sip-api), which runs
+`make ondewo_release` here).
 
-TODO after PR merge:
+Before releasing:
 
-- Checkout master
+- Check out and pull `master`.
+- Set `ONDEWO_SIP_VERSION` in the `Makefile`.
+- Add the release notes to `src/RELEASE.md`, with the heading spelled exactly like this (the release
+  matches it anchored, `^#+ Release ONDEWO SIP Angular Client <version>$`):
 
-  ```shell
-  git checkout master
-  ```
-
-- Pull newest state
-
-  ```shell
-  git pull
-  ```
-
-- Adjust `ONDEWO_SIP_VERSION` in the `Makefile` <br><br>
-- Add new Release Notes to `src/RELEASE.md` in following format:
-
-  ```
-  ## Release ONDEWO SIP Angular Client X.X.X    <----- Beginning of Notes
+  ```text
+  ## Release ONDEWO SIP Angular Client X.Y.Z    <----- Beginning of Notes
 
   ...<NOTES>...
 
   *****************                             <----- End of Notes
   ```
 
-- Release
+- Release:
 
   ```shell
   make ondewo_release
   ```
 
-  <br>
-  The release process can be divided into 6 Steps:
+`make ondewo_release` loads the npm and GitHub tokens from the devops-accounts repository (cloned into a
+temporary directory outside this repository, or read from `DEVOPS_ACCOUNT_DIR` when the driver hands one
+over), deletes the clone again before anything else runs (also when it fails), and runs `make release`:
 
-1. `build` specified version of the `ondewo-sip-api`
-2. `commit and push` all changes in code resulting from the `build`
-3. Publish the created `npm` folder to `npmjs.com`
-4. Create and push the `release branch` e.g. `release/1.3.20`
-5. Create and push the `release tag` e.g. `1.3.20`
-6. Create a new `Release` on GitHub
+1. `release_preflight` (read-only) stops the release before anything is built, committed or pushed unless
+   the npm token authenticates (`npm whoami`), the GitHub token can push to this repository, this host can
+   `git push`, neither the tag nor the `release/<version>` branch exists (locally or on origin), npm does
+   not have the version yet, `src/RELEASE.md` has non-empty notes for it, and the host tools exist.
+2. `build`, `check_build`, `release_tests` (`npm ci` and the whole jest suite) and the pre-commit hooks run
+   **without** the credentials in their environment.
+3. The generated code is committed locally; `check_tag_matches_package` then requires every file the npm
+   package ships to be committed and byte-equal at that commit.
+4. The `npm` folder is published to npmjs.com, and `check_npm_published` waits until npm serves the version.
+5. Only then is the commit pushed and the `release/<version>` branch and `<version>` tag created and pushed.
+6. The GitHub release is created (it refuses empty notes), and `release_verify` checks the tag on origin, the
+   GitHub release body and the npm version.
 
-> :warning: The Release Automation checks if the build has created all the proto-code files, but it does not check the code-integrity. Please build and test the generated code prior to starting the release process.
+A failing step stops the release; nothing after it runs. `make release_preflight` and `make release_verify`
+can be run on their own (both read-only).
+
+Host requirements: `docker`, `make`, `git`, `perl` and `curl`, plus SSH push access to this repository.
+npm and the GitHub CLI run in the pinned `Dockerfile.utils` image; node steps (dependency install, tests,
+hooks, `npm pack`, `npm view`) run on the host when `npm` is installed, otherwise in the same pinned node
+image as the invoking user.
 
 [comment]: <> (END OF GITHUB README)
