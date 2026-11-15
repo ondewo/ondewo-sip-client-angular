@@ -331,10 +331,14 @@ describe('the npm package matches the release commit', (): void => {
 			.flatMap((matched: RegExpMatchArray): string[] => matched[1].split(','))
 			.map((name: string): string => name.trim())
 			.filter((name: string): boolean => name !== '');
-		const typings: string = String(readFileSync(join(REPO_ROOT, 'index.d.ts'), 'utf8'));
-		const exported: string[] = [...typings.matchAll(/^export (?:type )?\{ (.*) \};$/gm)].flatMap(
-			(matched: RegExpMatchArray): string[] => matched[1].split(', ')
-		);
+		const typings: string = String(readFileSync(join(REPO_ROOT, JSON.parse(String(readFileSync(join(REPO_ROOT, 'package.json'), 'utf8'))).typings), 'utf8'));
+		const exported: string[] = [
+			...[...typings.matchAll(/^export (?:type )?\{ (.*) \};$/gm)].flatMap(
+				(matched: RegExpMatchArray): string[] => matched[1].split(', ')
+			),
+			// ng-packagr >= 22 exports every declaration inline instead of one trailing export list.
+			...[...typings.matchAll(/^export (?:declare )?(?:abstract )?(?:class|const|function|interface|type|enum|namespace) (\w+)/gm)].map((matched: RegExpMatchArray): string => matched[1])
+		];
 		expect(authNames).toContain('provideOndewoSipAuth');
 		expect(authNames.filter((name: string): boolean => !exported.includes(name))).toEqual([]);
 	});
@@ -423,7 +427,7 @@ describe('build and release toolchain', (): void => {
 				.map((line: string): string => line.trim().replace(/\/$/, ''))
 				.filter((line: string): boolean => line !== '' && !line.startsWith('#'))
 		);
-		const generated: string[] = ['api', 'fesm2022', 'npm', 'index.d.ts', 'public-api.ts', 'coverage'];
+		const generated: string[] = ['api', 'fesm2022', 'npm', 'types', 'public-api.ts', 'coverage'];
 		expect(generated.filter((artifact: string): boolean => !entries.has(artifact))).toEqual([]);
 	});
 });

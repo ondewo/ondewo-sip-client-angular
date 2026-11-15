@@ -29,7 +29,7 @@ function findRepoRoot(start: string): string {
 }
 
 const REPO_ROOT: string = findRepoRoot(String(__dirname));
-const TYPINGS: string = String(readFileSync(join(REPO_ROOT, "index.d.ts"), "utf8"));
+const TYPINGS: string = String(readFileSync(join(REPO_ROOT, JSON.parse(String(readFileSync(join(REPO_ROOT, "package.json"), "utf8"))).typings), "utf8"));
 /** The protos the codegen compiles (`ondewo-sip-api ondewo`: the api submodule's `ondewo/` tree). */
 const PROTO_ROOT: string = join(REPO_ROOT, "src", "ondewo-sip-api", "ondewo");
 

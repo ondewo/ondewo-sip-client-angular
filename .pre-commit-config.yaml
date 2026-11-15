@@ -17,7 +17,7 @@
 # which is ng-packagr's `dest` and is deleted on every build (src/auth/ng-packagr-dest.spec.ts).
 exclude: |
   (?x)(
-      ^(node_modules|api|fesm2022)/
+      ^(node_modules|api|fesm2022|types)/
       |^(ondewo-proto-compiler|src/ondewo-sip-api)(/|$)
       |^(index\.d\.ts|ondewo-sip-client-angular\.d\.ts|ondewo-sip-client-angular\.metadata\.json|package-lock\.json)$
       |(^|/)(node_modules|dist|build|npm|coverage|\.venv)/

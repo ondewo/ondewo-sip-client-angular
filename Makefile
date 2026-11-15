@@ -104,6 +104,9 @@ help: ## Print usage info about help targets
 makefile_chapters: ## Shows all sections of Makefile
 	@echo `cat Makefile| grep "########################################################" -A 1 | grep -v "########################################################"`
 
+test_angular_compat: ## Prove the generated library (npm/) works on every Angular the proto compiler supports (Docker + network; run make build first)
+	sh ondewo-proto-compiler/tests/angular-compat/run-compat.sh npm
+
 check_build: ## Checks if all built proto-code is there
 	@rm -rf build_check.txt
 	@rm -rf build_check_temp.txt
@@ -155,11 +158,11 @@ release: ## Create the npm and GitHub release (run through ondewo_release, which
 	git add RELEASE.md
 	# public-api.d.ts / public-api.d.ts.map are NOT staged: the codegen container deletes both
 	# (`rm -rf public-api.d.ts` in compile-proto-2-angular.sh) and emits the barrel as
-	# public-api.ts plus the flattened typings entry point index.d.ts, which `typings` points at.
-	# `git add` on a path that does not exist is fatal, and an unstaged index.d.ts would publish
+	# public-api.ts plus the flattened typings entry point types/, which `typings` points at.
+	# `git add` on a path that does not exist is fatal, and an unstaged types/ would publish
 	# typings to npm that were never committed.
 	git add public-api.ts
-	git add index.d.ts
+	git add types
 	git add ondewo-sip-client-angular.d.ts
 	git add ondewo-sip-client-angular.d.ts.map
 	git add ondewo-sip-client-angular.metadata.json
@@ -228,7 +231,7 @@ release_tests: ## The full jest suite on a clean install (npm ci), without the r
 #   README.md      the build cuts the GitHub-only release section out of the npm copy.
 #   public-api.ts  the codegen writes the npm copy stubs-only: npm/ has no src/, so the root barrel's
 #                  `export * from './src/auth';` would dangle there. Equal to the root copy minus that line.
-#                  (The auth surface still ships: ng-packagr bundled it into fesm2022/ and index.d.ts.)
+#                  (The auth surface still ships: ng-packagr bundled it into fesm2022/ and types/.)
 check_tag_matches_package: ## Read-only: every file npm pack ships is committed and byte-equal at HEAD
 	@files=$$(mktemp) && trap 'rm -f "$$files"' EXIT \
 		&& $(NODE_RUN) npm pack ./npm --dry-run --json --ignore-scripts 2>/dev/null \
