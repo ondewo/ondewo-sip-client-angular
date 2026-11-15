@@ -331,7 +331,7 @@ describe('the npm package matches the release commit', (): void => {
 			.flatMap((matched: RegExpMatchArray): string[] => matched[1].split(','))
 			.map((name: string): string => name.trim())
 			.filter((name: string): boolean => name !== '');
-		const typings: string = String(readFileSync(join(REPO_ROOT, JSON.parse(String(readFileSync(join(REPO_ROOT, 'package.json'), 'utf8'))).typings), 'utf8'));
+		const typings: string = String(readFileSync(join(REPO_ROOT, (JSON.parse(String(readFileSync(join(REPO_ROOT, 'package.json'), 'utf8'))) as { typings: string }).typings), 'utf8'));
 		const exported: string[] = [
 			...[...typings.matchAll(/^export (?:type )?\{ (.*) \};$/gm)].flatMap(
 				(matched: RegExpMatchArray): string[] => matched[1].split(', ')
