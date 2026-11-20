@@ -24,8 +24,9 @@
 	"peerDependencies": {
 		"@angular/common": ">=20.0.0 <23.0.0",
 		"@angular/core": ">=20.0.0 <23.0.0",
-		"@ngx-grpc/common": "~3.1.2",
-		"@ngx-grpc/core": "~3.1.2"
+		"@ngx-grpc/common": ">=3.1.2",
+		"@ngx-grpc/core": ">=3.1.2",
+		"@ngx-grpc/well-known-types": ">=3.1.2"
 	},
 	"module": "fesm2022/ondewo-sip-client-angular.mjs",
 	"typings": "types/ondewo-sip-client-angular.d.ts",
