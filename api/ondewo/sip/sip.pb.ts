@@ -13,6 +13,12 @@ import {
 import { BinaryReader, BinaryWriter, ByteSource } from 'google-protobuf';
 import * as googleProtobuf000 from '@ngx-grpc/well-known-types';
 import * as googleProtobuf001 from '@ngx-grpc/well-known-types';
+export enum SipTransferDelegation {
+  SIP_TRANSFER_DELEGATION_UNSPECIFIED = 0,
+  SIP_TRANSFER_DELEGATION_CLAIM = 1,
+  SIP_TRANSFER_DELEGATION_EXECUTE = 2,
+  SIP_TRANSFER_DELEGATION_DISCARD = 3
+}
 export enum MediaControlSetting {
   MEDIA_CONTROL_SETTING_UNCHANGED = 0,
   MEDIA_CONTROL_SETTING_ON = 1,
@@ -22,6 +28,20 @@ export enum MediaControlOwner {
   MEDIA_CONTROL_OWNER_UNSPECIFIED = 0,
   MEDIA_CONTROL_OWNER_OPERATOR = 1,
   MEDIA_CONTROL_OWNER_PARTICIPANT = 2
+}
+export enum SipWarmTransferOutcome {
+  SIP_WARM_TRANSFER_OUTCOME_UNSPECIFIED = 0,
+  SIP_WARM_TRANSFER_OUTCOME_DECLINED = 1,
+  SIP_WARM_TRANSFER_OUTCOME_UNREACHABLE = 2,
+  SIP_WARM_TRANSFER_OUTCOME_DELEGATION_EXPIRED = 3
+}
+export enum SipWarmTransferOutcomeNoticeStatus {
+  SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_UNSPECIFIED = 0,
+  SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_QUEUED = 1,
+  SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_DUPLICATE = 2,
+  SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_DISABLED = 3,
+  SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_INVALID = 4,
+  SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_PENDING = 5
 }
 export enum SipCallAudioMode {
   SIP_CALL_AUDIO_MODE_UNSPECIFIED = 0,
@@ -1435,6 +1455,8 @@ export class SipTransferCallRequest implements GrpcMessage {
     _instance.transferId = _instance.transferId || '';
     _instance.headers = _instance.headers || {};
     _instance.outcomeTimeoutMs = _instance.outcomeTimeoutMs || 0;
+    _instance.delegation = _instance.delegation || 0;
+    _instance.delegatedRequestId = _instance.delegatedRequestId || '';
   }
 
   /**
@@ -1464,6 +1486,12 @@ export class SipTransferCallRequest implements GrpcMessage {
           break;
         case 3:
           _instance.outcomeTimeoutMs = _reader.readUint32();
+          break;
+        case 4:
+          _instance.delegation = _reader.readEnum();
+          break;
+        case 5:
+          _instance.delegatedRequestId = _reader.readString();
           break;
         default:
           _reader.skipField();
@@ -1503,11 +1531,19 @@ export class SipTransferCallRequest implements GrpcMessage {
     if (_instance.outcomeTimeoutMs) {
       _writer.writeUint32(3, _instance.outcomeTimeoutMs);
     }
+    if (_instance.delegation) {
+      _writer.writeEnum(4, _instance.delegation);
+    }
+    if (_instance.delegatedRequestId) {
+      _writer.writeString(5, _instance.delegatedRequestId);
+    }
   }
 
   private _transferId: string;
   private _headers: { [prop: string]: string };
   private _outcomeTimeoutMs: number;
+  private _delegation: SipTransferDelegation;
+  private _delegatedRequestId: string;
 
   /**
    * Message constructor. Initializes the properties and applies default Protobuf values if necessary
@@ -1523,6 +1559,8 @@ export class SipTransferCallRequest implements GrpcMessage {
         )
       : {}),
       (this.outcomeTimeoutMs = _value.outcomeTimeoutMs);
+    this.delegation = _value.delegation;
+    this.delegatedRequestId = _value.delegatedRequestId;
     SipTransferCallRequest.refineValues(this);
   }
   get transferId(): string {
@@ -1542,6 +1580,18 @@ export class SipTransferCallRequest implements GrpcMessage {
   }
   set outcomeTimeoutMs(value: number) {
     this._outcomeTimeoutMs = value;
+  }
+  get delegation(): SipTransferDelegation {
+    return this._delegation;
+  }
+  set delegation(value: SipTransferDelegation) {
+    this._delegation = value;
+  }
+  get delegatedRequestId(): string {
+    return this._delegatedRequestId;
+  }
+  set delegatedRequestId(value: string) {
+    this._delegatedRequestId = value;
   }
 
   /**
@@ -1566,7 +1616,9 @@ export class SipTransferCallRequest implements GrpcMessage {
             {}
           )
         : {},
-      outcomeTimeoutMs: this.outcomeTimeoutMs
+      outcomeTimeoutMs: this.outcomeTimeoutMs,
+      delegation: this.delegation,
+      delegatedRequestId: this.delegatedRequestId
     };
   }
 
@@ -1594,7 +1646,14 @@ export class SipTransferCallRequest implements GrpcMessage {
             {}
           )
         : {},
-      outcomeTimeoutMs: this.outcomeTimeoutMs
+      outcomeTimeoutMs: this.outcomeTimeoutMs,
+      delegation:
+        SipTransferDelegation[
+          this.delegation === null || this.delegation === undefined
+            ? 0
+            : this.delegation
+        ],
+      delegatedRequestId: this.delegatedRequestId
     };
   }
 }
@@ -1606,6 +1665,8 @@ export module SipTransferCallRequest {
     transferId: string;
     headers: { [prop: string]: string };
     outcomeTimeoutMs: number;
+    delegation: SipTransferDelegation;
+    delegatedRequestId: string;
   }
 
   /**
@@ -1615,6 +1676,8 @@ export module SipTransferCallRequest {
     transferId: string;
     headers: { [prop: string]: string };
     outcomeTimeoutMs: number;
+    delegation: string;
+    delegatedRequestId: string;
   }
 
   /**
@@ -1622,6 +1685,424 @@ export module SipTransferCallRequest {
    */
   export class HeadersEntry implements GrpcMessage {
     static id = 'ondewo.sip.SipTransferCallRequest.HeadersEntry';
+
+    /**
+     * Deserialize binary data to message
+     * @param instance message instance
+     */
+    static deserializeBinary(bytes: ByteSource) {
+      const instance = new HeadersEntry();
+      HeadersEntry.deserializeBinaryFromReader(
+        instance,
+        new BinaryReader(bytes)
+      );
+      return instance;
+    }
+
+    /**
+     * Check all the properties and set default protobuf values if necessary
+     * @param _instance message instance
+     */
+    static refineValues(_instance: HeadersEntry) {
+      _instance.key = _instance.key || '';
+      _instance.value = _instance.value || '';
+    }
+
+    /**
+     * Deserializes / reads binary message into message instance using provided binary reader
+     * @param _instance message instance
+     * @param _reader binary reader instance
+     */
+    static deserializeBinaryFromReader(
+      _instance: HeadersEntry,
+      _reader: BinaryReader
+    ) {
+      while (_reader.nextField()) {
+        if (_reader.isEndGroup()) break;
+
+        switch (_reader.getFieldNumber()) {
+          case 1:
+            _instance.key = _reader.readString();
+            break;
+          case 2:
+            _instance.value = _reader.readString();
+            break;
+          default:
+            _reader.skipField();
+        }
+      }
+
+      HeadersEntry.refineValues(_instance);
+    }
+
+    /**
+     * Serializes a message to binary format using provided binary reader
+     * @param _instance message instance
+     * @param _writer binary writer instance
+     */
+    static serializeBinaryToWriter(
+      _instance: HeadersEntry,
+      _writer: BinaryWriter
+    ) {
+      if (_instance.key) {
+        _writer.writeString(1, _instance.key);
+      }
+      if (_instance.value) {
+        _writer.writeString(2, _instance.value);
+      }
+    }
+
+    private _key: string;
+    private _value: string;
+
+    /**
+     * Message constructor. Initializes the properties and applies default Protobuf values if necessary
+     * @param _value initial values object or instance of HeadersEntry to deeply clone from
+     */
+    constructor(_value?: RecursivePartial<HeadersEntry.AsObject>) {
+      _value = _value || {};
+      this.key = _value.key;
+      this.value = _value.value;
+      HeadersEntry.refineValues(this);
+    }
+    get key(): string {
+      return this._key;
+    }
+    set key(value: string) {
+      this._key = value;
+    }
+    get value(): string {
+      return this._value;
+    }
+    set value(value: string) {
+      this._value = value;
+    }
+
+    /**
+     * Serialize message to binary data
+     * @param instance message instance
+     */
+    serializeBinary() {
+      const writer = new BinaryWriter();
+      HeadersEntry.serializeBinaryToWriter(this, writer);
+      return writer.getResultBuffer();
+    }
+
+    /**
+     * Cast message to standard JavaScript object (all non-primitive values are deeply cloned)
+     */
+    toObject(): HeadersEntry.AsObject {
+      return {
+        key: this.key,
+        value: this.value
+      };
+    }
+
+    /**
+     * Convenience method to support JSON.stringify(message), replicates the structure of toObject()
+     */
+    toJSON() {
+      return this.toObject();
+    }
+
+    /**
+     * Cast message to JSON using protobuf JSON notation: https://developers.google.com/protocol-buffers/docs/proto3#json
+     * Attention: output differs from toObject() e.g. enums are represented as names and not as numbers, Timestamp is an ISO Date string format etc.
+     * If the message itself or some of descendant messages is google.protobuf.Any, you MUST provide a message pool as options. If not, the messagePool is not required
+     */
+    toProtobufJSON(
+      // @ts-ignore
+      options?: ToProtobufJSONOptions
+    ): HeadersEntry.AsProtobufJSON {
+      return {
+        key: this.key,
+        value: this.value
+      };
+    }
+  }
+  export module HeadersEntry {
+    /**
+     * Standard JavaScript object representation for HeadersEntry
+     */
+    export interface AsObject {
+      key: string;
+      value: string;
+    }
+
+    /**
+     * Protobuf JSON representation for HeadersEntry
+     */
+    export interface AsProtobufJSON {
+      key: string;
+      value: string;
+    }
+  }
+}
+
+/**
+ * Message implementation for ondewo.sip.SipDelegatedTransfer
+ */
+export class SipDelegatedTransfer implements GrpcMessage {
+  static id = 'ondewo.sip.SipDelegatedTransfer';
+
+  /**
+   * Deserialize binary data to message
+   * @param instance message instance
+   */
+  static deserializeBinary(bytes: ByteSource) {
+    const instance = new SipDelegatedTransfer();
+    SipDelegatedTransfer.deserializeBinaryFromReader(
+      instance,
+      new BinaryReader(bytes)
+    );
+    return instance;
+  }
+
+  /**
+   * Check all the properties and set default protobuf values if necessary
+   * @param _instance message instance
+   */
+  static refineValues(_instance: SipDelegatedTransfer) {
+    _instance.requestId = _instance.requestId || '';
+    _instance.requestedAt = _instance.requestedAt || undefined;
+    _instance.targetIsPhoneNumber = _instance.targetIsPhoneNumber || false;
+    _instance.transferId = _instance.transferId || '';
+    _instance.headers = _instance.headers || {};
+  }
+
+  /**
+   * Deserializes / reads binary message into message instance using provided binary reader
+   * @param _instance message instance
+   * @param _reader binary reader instance
+   */
+  static deserializeBinaryFromReader(
+    _instance: SipDelegatedTransfer,
+    _reader: BinaryReader
+  ) {
+    while (_reader.nextField()) {
+      if (_reader.isEndGroup()) break;
+
+      switch (_reader.getFieldNumber()) {
+        case 1:
+          _instance.requestId = _reader.readString();
+          break;
+        case 2:
+          _instance.requestedAt = new googleProtobuf001.Timestamp();
+          _reader.readMessage(
+            _instance.requestedAt,
+            googleProtobuf001.Timestamp.deserializeBinaryFromReader
+          );
+          break;
+        case 3:
+          _instance.targetIsPhoneNumber = _reader.readBool();
+          break;
+        case 4:
+          _instance.transferId = _reader.readString();
+          break;
+        case 5:
+          const msg_5 = {} as any;
+          _reader.readMessage(
+            msg_5,
+            SipDelegatedTransfer.HeadersEntry.deserializeBinaryFromReader
+          );
+          _instance.headers = _instance.headers || {};
+          _instance.headers[msg_5.key] = msg_5.value;
+          break;
+        default:
+          _reader.skipField();
+      }
+    }
+
+    SipDelegatedTransfer.refineValues(_instance);
+  }
+
+  /**
+   * Serializes a message to binary format using provided binary reader
+   * @param _instance message instance
+   * @param _writer binary writer instance
+   */
+  static serializeBinaryToWriter(
+    _instance: SipDelegatedTransfer,
+    _writer: BinaryWriter
+  ) {
+    if (_instance.requestId) {
+      _writer.writeString(1, _instance.requestId);
+    }
+    if (_instance.requestedAt) {
+      _writer.writeMessage(
+        2,
+        _instance.requestedAt as any,
+        googleProtobuf001.Timestamp.serializeBinaryToWriter
+      );
+    }
+    if (_instance.targetIsPhoneNumber) {
+      _writer.writeBool(3, _instance.targetIsPhoneNumber);
+    }
+    if (_instance.transferId) {
+      _writer.writeString(4, _instance.transferId);
+    }
+    if (!!_instance.headers) {
+      const keys_5 = Object.keys(_instance.headers as any);
+
+      if (keys_5.length) {
+        const repeated_5 = keys_5
+          .map(key => ({ key: key, value: (_instance.headers as any)[key] }))
+          .reduce((r, v) => [...r, v], [] as any[]);
+
+        _writer.writeRepeatedMessage(
+          5,
+          repeated_5,
+          SipDelegatedTransfer.HeadersEntry.serializeBinaryToWriter
+        );
+      }
+    }
+  }
+
+  private _requestId: string;
+  private _requestedAt?: googleProtobuf001.Timestamp;
+  private _targetIsPhoneNumber: boolean;
+  private _transferId: string;
+  private _headers: { [prop: string]: string };
+
+  /**
+   * Message constructor. Initializes the properties and applies default Protobuf values if necessary
+   * @param _value initial values object or instance of SipDelegatedTransfer to deeply clone from
+   */
+  constructor(_value?: RecursivePartial<SipDelegatedTransfer.AsObject>) {
+    _value = _value || {};
+    this.requestId = _value.requestId;
+    this.requestedAt = _value.requestedAt
+      ? new googleProtobuf001.Timestamp(_value.requestedAt)
+      : undefined;
+    this.targetIsPhoneNumber = _value.targetIsPhoneNumber;
+    this.transferId = _value.transferId;
+    (this.headers = _value!.headers
+      ? Object.keys(_value!.headers).reduce(
+          (r, k) => ({ ...r, [k]: _value!.headers![k] }),
+          {}
+        )
+      : {}),
+      SipDelegatedTransfer.refineValues(this);
+  }
+  get requestId(): string {
+    return this._requestId;
+  }
+  set requestId(value: string) {
+    this._requestId = value;
+  }
+  get requestedAt(): googleProtobuf001.Timestamp | undefined {
+    return this._requestedAt;
+  }
+  set requestedAt(value: googleProtobuf001.Timestamp | undefined) {
+    this._requestedAt = value;
+  }
+  get targetIsPhoneNumber(): boolean {
+    return this._targetIsPhoneNumber;
+  }
+  set targetIsPhoneNumber(value: boolean) {
+    this._targetIsPhoneNumber = value;
+  }
+  get transferId(): string {
+    return this._transferId;
+  }
+  set transferId(value: string) {
+    this._transferId = value;
+  }
+  get headers(): { [prop: string]: string } {
+    return this._headers;
+  }
+  set headers(value: { [prop: string]: string }) {
+    this._headers = value;
+  }
+
+  /**
+   * Serialize message to binary data
+   * @param instance message instance
+   */
+  serializeBinary() {
+    const writer = new BinaryWriter();
+    SipDelegatedTransfer.serializeBinaryToWriter(this, writer);
+    return writer.getResultBuffer();
+  }
+
+  /**
+   * Cast message to standard JavaScript object (all non-primitive values are deeply cloned)
+   */
+  toObject(): SipDelegatedTransfer.AsObject {
+    return {
+      requestId: this.requestId,
+      requestedAt: this.requestedAt ? this.requestedAt.toObject() : undefined,
+      targetIsPhoneNumber: this.targetIsPhoneNumber,
+      transferId: this.transferId,
+      headers: this.headers
+        ? Object.keys(this.headers).reduce(
+            (r, k) => ({ ...r, [k]: this.headers![k] }),
+            {}
+          )
+        : {}
+    };
+  }
+
+  /**
+   * Convenience method to support JSON.stringify(message), replicates the structure of toObject()
+   */
+  toJSON() {
+    return this.toObject();
+  }
+
+  /**
+   * Cast message to JSON using protobuf JSON notation: https://developers.google.com/protocol-buffers/docs/proto3#json
+   * Attention: output differs from toObject() e.g. enums are represented as names and not as numbers, Timestamp is an ISO Date string format etc.
+   * If the message itself or some of descendant messages is google.protobuf.Any, you MUST provide a message pool as options. If not, the messagePool is not required
+   */
+  toProtobufJSON(
+    // @ts-ignore
+    options?: ToProtobufJSONOptions
+  ): SipDelegatedTransfer.AsProtobufJSON {
+    return {
+      requestId: this.requestId,
+      requestedAt: this.requestedAt
+        ? this.requestedAt.toProtobufJSON(options)
+        : null,
+      targetIsPhoneNumber: this.targetIsPhoneNumber,
+      transferId: this.transferId,
+      headers: this.headers
+        ? Object.keys(this.headers).reduce(
+            (r, k) => ({ ...r, [k]: this.headers![k] }),
+            {}
+          )
+        : {}
+    };
+  }
+}
+export module SipDelegatedTransfer {
+  /**
+   * Standard JavaScript object representation for SipDelegatedTransfer
+   */
+  export interface AsObject {
+    requestId: string;
+    requestedAt?: googleProtobuf001.Timestamp.AsObject;
+    targetIsPhoneNumber: boolean;
+    transferId: string;
+    headers: { [prop: string]: string };
+  }
+
+  /**
+   * Protobuf JSON representation for SipDelegatedTransfer
+   */
+  export interface AsProtobufJSON {
+    requestId: string;
+    requestedAt: googleProtobuf001.Timestamp.AsProtobufJSON | null;
+    targetIsPhoneNumber: boolean;
+    transferId: string;
+    headers: { [prop: string]: string };
+  }
+
+  /**
+   * Message implementation for ondewo.sip.SipDelegatedTransfer.HeadersEntry
+   */
+  export class HeadersEntry implements GrpcMessage {
+    static id = 'ondewo.sip.SipDelegatedTransfer.HeadersEntry';
 
     /**
      * Deserialize binary data to message
@@ -1813,6 +2294,10 @@ export class SipStatus implements GrpcMessage {
     _instance.listeningPaused = _instance.listeningPaused || false;
     _instance.callAudioStreams = _instance.callAudioStreams || 0;
     _instance.sipResponseCode = _instance.sipResponseCode || 0;
+    _instance.delegatedTransfer = _instance.delegatedTransfer || undefined;
+    _instance.capabilities = _instance.capabilities || [];
+    _instance.warmTransferOutcomeNoticeStatus =
+      _instance.warmTransferOutcomeNoticeStatus || 0;
   }
 
   /**
@@ -1889,6 +2374,21 @@ export class SipStatus implements GrpcMessage {
           break;
         case 16:
           _instance.sipResponseCode = _reader.readInt32();
+          break;
+        case 17:
+          _instance.delegatedTransfer = new SipDelegatedTransfer();
+          _reader.readMessage(
+            _instance.delegatedTransfer,
+            SipDelegatedTransfer.deserializeBinaryFromReader
+          );
+          break;
+        case 18:
+          (_instance.capabilities = _instance.capabilities || []).push(
+            _reader.readString()
+          );
+          break;
+        case 19:
+          _instance.warmTransferOutcomeNoticeStatus = _reader.readEnum();
           break;
         default:
           _reader.skipField();
@@ -1972,6 +2472,19 @@ export class SipStatus implements GrpcMessage {
     if (_instance.sipResponseCode) {
       _writer.writeInt32(16, _instance.sipResponseCode);
     }
+    if (_instance.delegatedTransfer) {
+      _writer.writeMessage(
+        17,
+        _instance.delegatedTransfer as any,
+        SipDelegatedTransfer.serializeBinaryToWriter
+      );
+    }
+    if (_instance.capabilities && _instance.capabilities.length) {
+      _writer.writeRepeatedString(18, _instance.capabilities);
+    }
+    if (_instance.warmTransferOutcomeNoticeStatus) {
+      _writer.writeEnum(19, _instance.warmTransferOutcomeNoticeStatus);
+    }
   }
 
   private _accountName: string;
@@ -1990,6 +2503,9 @@ export class SipStatus implements GrpcMessage {
   private _listeningPaused: boolean;
   private _callAudioStreams: number;
   private _sipResponseCode: number;
+  private _delegatedTransfer?: SipDelegatedTransfer;
+  private _capabilities: string[];
+  private _warmTransferOutcomeNoticeStatus: SipWarmTransferOutcomeNoticeStatus;
 
   /**
    * Message constructor. Initializes the properties and applies default Protobuf values if necessary
@@ -2022,6 +2538,12 @@ export class SipStatus implements GrpcMessage {
     this.listeningPaused = _value.listeningPaused;
     this.callAudioStreams = _value.callAudioStreams;
     this.sipResponseCode = _value.sipResponseCode;
+    this.delegatedTransfer = _value.delegatedTransfer
+      ? new SipDelegatedTransfer(_value.delegatedTransfer)
+      : undefined;
+    this.capabilities = (_value.capabilities || []).slice();
+    this.warmTransferOutcomeNoticeStatus =
+      _value.warmTransferOutcomeNoticeStatus;
     SipStatus.refineValues(this);
   }
   get accountName(): string {
@@ -2120,6 +2642,26 @@ export class SipStatus implements GrpcMessage {
   set sipResponseCode(value: number) {
     this._sipResponseCode = value;
   }
+  get delegatedTransfer(): SipDelegatedTransfer | undefined {
+    return this._delegatedTransfer;
+  }
+  set delegatedTransfer(value: SipDelegatedTransfer | undefined) {
+    this._delegatedTransfer = value;
+  }
+  get capabilities(): string[] {
+    return this._capabilities;
+  }
+  set capabilities(value: string[]) {
+    this._capabilities = value;
+  }
+  get warmTransferOutcomeNoticeStatus(): SipWarmTransferOutcomeNoticeStatus {
+    return this._warmTransferOutcomeNoticeStatus;
+  }
+  set warmTransferOutcomeNoticeStatus(
+    value: SipWarmTransferOutcomeNoticeStatus
+  ) {
+    this._warmTransferOutcomeNoticeStatus = value;
+  }
 
   /**
    * Serialize message to binary data
@@ -2156,7 +2698,12 @@ export class SipStatus implements GrpcMessage {
       botMuted: this.botMuted,
       listeningPaused: this.listeningPaused,
       callAudioStreams: this.callAudioStreams,
-      sipResponseCode: this.sipResponseCode
+      sipResponseCode: this.sipResponseCode,
+      delegatedTransfer: this.delegatedTransfer
+        ? this.delegatedTransfer.toObject()
+        : undefined,
+      capabilities: (this.capabilities || []).slice(),
+      warmTransferOutcomeNoticeStatus: this.warmTransferOutcomeNoticeStatus
     };
   }
 
@@ -2202,7 +2749,18 @@ export class SipStatus implements GrpcMessage {
       botMuted: this.botMuted,
       listeningPaused: this.listeningPaused,
       callAudioStreams: this.callAudioStreams,
-      sipResponseCode: this.sipResponseCode
+      sipResponseCode: this.sipResponseCode,
+      delegatedTransfer: this.delegatedTransfer
+        ? this.delegatedTransfer.toProtobufJSON(options)
+        : null,
+      capabilities: (this.capabilities || []).slice(),
+      warmTransferOutcomeNoticeStatus:
+        SipWarmTransferOutcomeNoticeStatus[
+          this.warmTransferOutcomeNoticeStatus === null ||
+          this.warmTransferOutcomeNoticeStatus === undefined
+            ? 0
+            : this.warmTransferOutcomeNoticeStatus
+        ]
     };
   }
 }
@@ -2227,6 +2785,9 @@ export module SipStatus {
     listeningPaused: boolean;
     callAudioStreams: number;
     sipResponseCode: number;
+    delegatedTransfer?: SipDelegatedTransfer.AsObject;
+    capabilities: string[];
+    warmTransferOutcomeNoticeStatus: SipWarmTransferOutcomeNoticeStatus;
   }
 
   /**
@@ -2249,6 +2810,9 @@ export module SipStatus {
     listeningPaused: boolean;
     callAudioStreams: number;
     sipResponseCode: number;
+    delegatedTransfer: SipDelegatedTransfer.AsProtobufJSON | null;
+    capabilities: string[];
+    warmTransferOutcomeNoticeStatus: string;
   }
   export enum StatusType {
     NO_SESSION = 0,
@@ -2616,6 +3180,7 @@ export class SipSetCallMediaControlRequest implements GrpcMessage {
     _instance.botListening = _instance.botListening || 0;
     _instance.owner = _instance.owner || 0;
     _instance.participantsPresent = _instance.participantsPresent || false;
+    _instance.warmTransferOutcome = _instance.warmTransferOutcome || undefined;
   }
 
   /**
@@ -2642,6 +3207,13 @@ export class SipSetCallMediaControlRequest implements GrpcMessage {
           break;
         case 4:
           _instance.participantsPresent = _reader.readBool();
+          break;
+        case 5:
+          _instance.warmTransferOutcome = new SipWarmTransferOutcomeNotice();
+          _reader.readMessage(
+            _instance.warmTransferOutcome,
+            SipWarmTransferOutcomeNotice.deserializeBinaryFromReader
+          );
           break;
         default:
           _reader.skipField();
@@ -2672,12 +3244,20 @@ export class SipSetCallMediaControlRequest implements GrpcMessage {
     if (_instance.participantsPresent) {
       _writer.writeBool(4, _instance.participantsPresent);
     }
+    if (_instance.warmTransferOutcome) {
+      _writer.writeMessage(
+        5,
+        _instance.warmTransferOutcome as any,
+        SipWarmTransferOutcomeNotice.serializeBinaryToWriter
+      );
+    }
   }
 
   private _botVoice: MediaControlSetting;
   private _botListening: MediaControlSetting;
   private _owner: MediaControlOwner;
   private _participantsPresent: boolean;
+  private _warmTransferOutcome?: SipWarmTransferOutcomeNotice;
 
   /**
    * Message constructor. Initializes the properties and applies default Protobuf values if necessary
@@ -2691,6 +3271,9 @@ export class SipSetCallMediaControlRequest implements GrpcMessage {
     this.botListening = _value.botListening;
     this.owner = _value.owner;
     this.participantsPresent = _value.participantsPresent;
+    this.warmTransferOutcome = _value.warmTransferOutcome
+      ? new SipWarmTransferOutcomeNotice(_value.warmTransferOutcome)
+      : undefined;
     SipSetCallMediaControlRequest.refineValues(this);
   }
   get botVoice(): MediaControlSetting {
@@ -2717,6 +3300,12 @@ export class SipSetCallMediaControlRequest implements GrpcMessage {
   set participantsPresent(value: boolean) {
     this._participantsPresent = value;
   }
+  get warmTransferOutcome(): SipWarmTransferOutcomeNotice | undefined {
+    return this._warmTransferOutcome;
+  }
+  set warmTransferOutcome(value: SipWarmTransferOutcomeNotice | undefined) {
+    this._warmTransferOutcome = value;
+  }
 
   /**
    * Serialize message to binary data
@@ -2736,7 +3325,10 @@ export class SipSetCallMediaControlRequest implements GrpcMessage {
       botVoice: this.botVoice,
       botListening: this.botListening,
       owner: this.owner,
-      participantsPresent: this.participantsPresent
+      participantsPresent: this.participantsPresent,
+      warmTransferOutcome: this.warmTransferOutcome
+        ? this.warmTransferOutcome.toObject()
+        : undefined
     };
   }
 
@@ -2773,7 +3365,10 @@ export class SipSetCallMediaControlRequest implements GrpcMessage {
         MediaControlOwner[
           this.owner === null || this.owner === undefined ? 0 : this.owner
         ],
-      participantsPresent: this.participantsPresent
+      participantsPresent: this.participantsPresent,
+      warmTransferOutcome: this.warmTransferOutcome
+        ? this.warmTransferOutcome.toProtobufJSON(options)
+        : null
     };
   }
 }
@@ -2786,6 +3381,7 @@ export module SipSetCallMediaControlRequest {
     botListening: MediaControlSetting;
     owner: MediaControlOwner;
     participantsPresent: boolean;
+    warmTransferOutcome?: SipWarmTransferOutcomeNotice.AsObject;
   }
 
   /**
@@ -2796,6 +3392,385 @@ export module SipSetCallMediaControlRequest {
     botListening: string;
     owner: string;
     participantsPresent: boolean;
+    warmTransferOutcome: SipWarmTransferOutcomeNotice.AsProtobufJSON | null;
+  }
+}
+
+/**
+ * Message implementation for ondewo.sip.SipWarmTransferOutcomeNotice
+ */
+export class SipWarmTransferOutcomeNotice implements GrpcMessage {
+  static id = 'ondewo.sip.SipWarmTransferOutcomeNotice';
+
+  /**
+   * Deserialize binary data to message
+   * @param instance message instance
+   */
+  static deserializeBinary(bytes: ByteSource) {
+    const instance = new SipWarmTransferOutcomeNotice();
+    SipWarmTransferOutcomeNotice.deserializeBinaryFromReader(
+      instance,
+      new BinaryReader(bytes)
+    );
+    return instance;
+  }
+
+  /**
+   * Check all the properties and set default protobuf values if necessary
+   * @param _instance message instance
+   */
+  static refineValues(_instance: SipWarmTransferOutcomeNotice) {
+    _instance.requestId = _instance.requestId || '';
+    _instance.outcome = _instance.outcome || 0;
+    _instance.introSession = _instance.introSession || '';
+    _instance.calleeDisplayName = _instance.calleeDisplayName || '';
+    _instance.cause = _instance.cause || '';
+    _instance.fallbackText = _instance.fallbackText || '';
+  }
+
+  /**
+   * Deserializes / reads binary message into message instance using provided binary reader
+   * @param _instance message instance
+   * @param _reader binary reader instance
+   */
+  static deserializeBinaryFromReader(
+    _instance: SipWarmTransferOutcomeNotice,
+    _reader: BinaryReader
+  ) {
+    while (_reader.nextField()) {
+      if (_reader.isEndGroup()) break;
+
+      switch (_reader.getFieldNumber()) {
+        case 1:
+          _instance.requestId = _reader.readString();
+          break;
+        case 2:
+          _instance.outcome = _reader.readEnum();
+          break;
+        case 3:
+          _instance.introSession = _reader.readString();
+          break;
+        case 4:
+          _instance.calleeDisplayName = _reader.readString();
+          break;
+        case 5:
+          _instance.cause = _reader.readString();
+          break;
+        case 6:
+          _instance.fallbackText = _reader.readString();
+          break;
+        default:
+          _reader.skipField();
+      }
+    }
+
+    SipWarmTransferOutcomeNotice.refineValues(_instance);
+  }
+
+  /**
+   * Serializes a message to binary format using provided binary reader
+   * @param _instance message instance
+   * @param _writer binary writer instance
+   */
+  static serializeBinaryToWriter(
+    _instance: SipWarmTransferOutcomeNotice,
+    _writer: BinaryWriter
+  ) {
+    if (_instance.requestId) {
+      _writer.writeString(1, _instance.requestId);
+    }
+    if (_instance.outcome) {
+      _writer.writeEnum(2, _instance.outcome);
+    }
+    if (_instance.introSession) {
+      _writer.writeString(3, _instance.introSession);
+    }
+    if (_instance.calleeDisplayName) {
+      _writer.writeString(4, _instance.calleeDisplayName);
+    }
+    if (_instance.cause) {
+      _writer.writeString(5, _instance.cause);
+    }
+    if (_instance.fallbackText) {
+      _writer.writeString(6, _instance.fallbackText);
+    }
+  }
+
+  private _requestId: string;
+  private _outcome: SipWarmTransferOutcome;
+  private _introSession: string;
+  private _calleeDisplayName: string;
+  private _cause: string;
+  private _fallbackText: string;
+
+  /**
+   * Message constructor. Initializes the properties and applies default Protobuf values if necessary
+   * @param _value initial values object or instance of SipWarmTransferOutcomeNotice to deeply clone from
+   */
+  constructor(
+    _value?: RecursivePartial<SipWarmTransferOutcomeNotice.AsObject>
+  ) {
+    _value = _value || {};
+    this.requestId = _value.requestId;
+    this.outcome = _value.outcome;
+    this.introSession = _value.introSession;
+    this.calleeDisplayName = _value.calleeDisplayName;
+    this.cause = _value.cause;
+    this.fallbackText = _value.fallbackText;
+    SipWarmTransferOutcomeNotice.refineValues(this);
+  }
+  get requestId(): string {
+    return this._requestId;
+  }
+  set requestId(value: string) {
+    this._requestId = value;
+  }
+  get outcome(): SipWarmTransferOutcome {
+    return this._outcome;
+  }
+  set outcome(value: SipWarmTransferOutcome) {
+    this._outcome = value;
+  }
+  get introSession(): string {
+    return this._introSession;
+  }
+  set introSession(value: string) {
+    this._introSession = value;
+  }
+  get calleeDisplayName(): string {
+    return this._calleeDisplayName;
+  }
+  set calleeDisplayName(value: string) {
+    this._calleeDisplayName = value;
+  }
+  get cause(): string {
+    return this._cause;
+  }
+  set cause(value: string) {
+    this._cause = value;
+  }
+  get fallbackText(): string {
+    return this._fallbackText;
+  }
+  set fallbackText(value: string) {
+    this._fallbackText = value;
+  }
+
+  /**
+   * Serialize message to binary data
+   * @param instance message instance
+   */
+  serializeBinary() {
+    const writer = new BinaryWriter();
+    SipWarmTransferOutcomeNotice.serializeBinaryToWriter(this, writer);
+    return writer.getResultBuffer();
+  }
+
+  /**
+   * Cast message to standard JavaScript object (all non-primitive values are deeply cloned)
+   */
+  toObject(): SipWarmTransferOutcomeNotice.AsObject {
+    return {
+      requestId: this.requestId,
+      outcome: this.outcome,
+      introSession: this.introSession,
+      calleeDisplayName: this.calleeDisplayName,
+      cause: this.cause,
+      fallbackText: this.fallbackText
+    };
+  }
+
+  /**
+   * Convenience method to support JSON.stringify(message), replicates the structure of toObject()
+   */
+  toJSON() {
+    return this.toObject();
+  }
+
+  /**
+   * Cast message to JSON using protobuf JSON notation: https://developers.google.com/protocol-buffers/docs/proto3#json
+   * Attention: output differs from toObject() e.g. enums are represented as names and not as numbers, Timestamp is an ISO Date string format etc.
+   * If the message itself or some of descendant messages is google.protobuf.Any, you MUST provide a message pool as options. If not, the messagePool is not required
+   */
+  toProtobufJSON(
+    // @ts-ignore
+    options?: ToProtobufJSONOptions
+  ): SipWarmTransferOutcomeNotice.AsProtobufJSON {
+    return {
+      requestId: this.requestId,
+      outcome:
+        SipWarmTransferOutcome[
+          this.outcome === null || this.outcome === undefined ? 0 : this.outcome
+        ],
+      introSession: this.introSession,
+      calleeDisplayName: this.calleeDisplayName,
+      cause: this.cause,
+      fallbackText: this.fallbackText
+    };
+  }
+}
+export module SipWarmTransferOutcomeNotice {
+  /**
+   * Standard JavaScript object representation for SipWarmTransferOutcomeNotice
+   */
+  export interface AsObject {
+    requestId: string;
+    outcome: SipWarmTransferOutcome;
+    introSession: string;
+    calleeDisplayName: string;
+    cause: string;
+    fallbackText: string;
+  }
+
+  /**
+   * Protobuf JSON representation for SipWarmTransferOutcomeNotice
+   */
+  export interface AsProtobufJSON {
+    requestId: string;
+    outcome: string;
+    introSession: string;
+    calleeDisplayName: string;
+    cause: string;
+    fallbackText: string;
+  }
+}
+
+/**
+ * Message implementation for ondewo.sip.SipSendDtmfRequest
+ */
+export class SipSendDtmfRequest implements GrpcMessage {
+  static id = 'ondewo.sip.SipSendDtmfRequest';
+
+  /**
+   * Deserialize binary data to message
+   * @param instance message instance
+   */
+  static deserializeBinary(bytes: ByteSource) {
+    const instance = new SipSendDtmfRequest();
+    SipSendDtmfRequest.deserializeBinaryFromReader(
+      instance,
+      new BinaryReader(bytes)
+    );
+    return instance;
+  }
+
+  /**
+   * Check all the properties and set default protobuf values if necessary
+   * @param _instance message instance
+   */
+  static refineValues(_instance: SipSendDtmfRequest) {
+    _instance.digits = _instance.digits || '';
+  }
+
+  /**
+   * Deserializes / reads binary message into message instance using provided binary reader
+   * @param _instance message instance
+   * @param _reader binary reader instance
+   */
+  static deserializeBinaryFromReader(
+    _instance: SipSendDtmfRequest,
+    _reader: BinaryReader
+  ) {
+    while (_reader.nextField()) {
+      if (_reader.isEndGroup()) break;
+
+      switch (_reader.getFieldNumber()) {
+        case 1:
+          _instance.digits = _reader.readString();
+          break;
+        default:
+          _reader.skipField();
+      }
+    }
+
+    SipSendDtmfRequest.refineValues(_instance);
+  }
+
+  /**
+   * Serializes a message to binary format using provided binary reader
+   * @param _instance message instance
+   * @param _writer binary writer instance
+   */
+  static serializeBinaryToWriter(
+    _instance: SipSendDtmfRequest,
+    _writer: BinaryWriter
+  ) {
+    if (_instance.digits) {
+      _writer.writeString(1, _instance.digits);
+    }
+  }
+
+  private _digits: string;
+
+  /**
+   * Message constructor. Initializes the properties and applies default Protobuf values if necessary
+   * @param _value initial values object or instance of SipSendDtmfRequest to deeply clone from
+   */
+  constructor(_value?: RecursivePartial<SipSendDtmfRequest.AsObject>) {
+    _value = _value || {};
+    this.digits = _value.digits;
+    SipSendDtmfRequest.refineValues(this);
+  }
+  get digits(): string {
+    return this._digits;
+  }
+  set digits(value: string) {
+    this._digits = value;
+  }
+
+  /**
+   * Serialize message to binary data
+   * @param instance message instance
+   */
+  serializeBinary() {
+    const writer = new BinaryWriter();
+    SipSendDtmfRequest.serializeBinaryToWriter(this, writer);
+    return writer.getResultBuffer();
+  }
+
+  /**
+   * Cast message to standard JavaScript object (all non-primitive values are deeply cloned)
+   */
+  toObject(): SipSendDtmfRequest.AsObject {
+    return {
+      digits: this.digits
+    };
+  }
+
+  /**
+   * Convenience method to support JSON.stringify(message), replicates the structure of toObject()
+   */
+  toJSON() {
+    return this.toObject();
+  }
+
+  /**
+   * Cast message to JSON using protobuf JSON notation: https://developers.google.com/protocol-buffers/docs/proto3#json
+   * Attention: output differs from toObject() e.g. enums are represented as names and not as numbers, Timestamp is an ISO Date string format etc.
+   * If the message itself or some of descendant messages is google.protobuf.Any, you MUST provide a message pool as options. If not, the messagePool is not required
+   */
+  toProtobufJSON(
+    // @ts-ignore
+    options?: ToProtobufJSONOptions
+  ): SipSendDtmfRequest.AsProtobufJSON {
+    return {
+      digits: this.digits
+    };
+  }
+}
+export module SipSendDtmfRequest {
+  /**
+   * Standard JavaScript object representation for SipSendDtmfRequest
+   */
+  export interface AsObject {
+    digits: string;
+  }
+
+  /**
+   * Protobuf JSON representation for SipSendDtmfRequest
+   */
+  export interface AsProtobufJSON {
+    digits: string;
   }
 }
 

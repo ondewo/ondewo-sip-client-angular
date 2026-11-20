@@ -1,3 +1,6 @@
+/**
+ * Generated bundle index. Do not edit.
+ */
 import { GrpcClientFactory, GrpcEvent, GrpcMessage, GrpcMetadata, GrpcRequest, RecursivePartial, ToProtobufJSONOptions } from "@ngx-grpc/common";
 import { BinaryReader, BinaryWriter, ByteSource } from "google-protobuf";
 import * as googleProtobuf001 from "@ngx-grpc/well-known-types";
@@ -6,6 +9,12 @@ import { EnvironmentProviders, InjectionToken, NgZone, OnDestroy, Type } from "@
 import { GrpcHandler, GrpcInterceptor } from "@ngx-grpc/core";
 import { Observable } from "rxjs";
 import { HttpClient, HttpEvent, HttpHandlerFn, HttpRequest } from "@angular/common/http";
+export declare enum SipTransferDelegation {
+  SIP_TRANSFER_DELEGATION_UNSPECIFIED = 0,
+  SIP_TRANSFER_DELEGATION_CLAIM = 1,
+  SIP_TRANSFER_DELEGATION_EXECUTE = 2,
+  SIP_TRANSFER_DELEGATION_DISCARD = 3
+}
 export declare enum MediaControlSetting {
   MEDIA_CONTROL_SETTING_UNCHANGED = 0,
   MEDIA_CONTROL_SETTING_ON = 1,
@@ -15,6 +24,20 @@ export declare enum MediaControlOwner {
   MEDIA_CONTROL_OWNER_UNSPECIFIED = 0,
   MEDIA_CONTROL_OWNER_OPERATOR = 1,
   MEDIA_CONTROL_OWNER_PARTICIPANT = 2
+}
+export declare enum SipWarmTransferOutcome {
+  SIP_WARM_TRANSFER_OUTCOME_UNSPECIFIED = 0,
+  SIP_WARM_TRANSFER_OUTCOME_DECLINED = 1,
+  SIP_WARM_TRANSFER_OUTCOME_UNREACHABLE = 2,
+  SIP_WARM_TRANSFER_OUTCOME_DELEGATION_EXPIRED = 3
+}
+export declare enum SipWarmTransferOutcomeNoticeStatus {
+  SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_UNSPECIFIED = 0,
+  SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_QUEUED = 1,
+  SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_DUPLICATE = 2,
+  SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_DISABLED = 3,
+  SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_INVALID = 4,
+  SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_PENDING = 5
 }
 export declare enum SipCallAudioMode {
   SIP_CALL_AUDIO_MODE_UNSPECIFIED = 0,
@@ -661,6 +684,8 @@ export declare class SipTransferCallRequest implements GrpcMessage {
   private _transferId;
   private _headers;
   private _outcomeTimeoutMs;
+  private _delegation;
+  private _delegatedRequestId;
   /**
    * Message constructor. Initializes the properties and applies default Protobuf values if necessary
    * @param _value initial values object or instance of SipTransferCallRequest to deeply clone from
@@ -676,6 +701,10 @@ export declare class SipTransferCallRequest implements GrpcMessage {
   });
   get outcomeTimeoutMs(): number;
   set outcomeTimeoutMs(value: number);
+  get delegation(): SipTransferDelegation;
+  set delegation(value: SipTransferDelegation);
+  get delegatedRequestId(): string;
+  set delegatedRequestId(value: string);
   /**
    * Serialize message to binary data
    * @param instance message instance
@@ -706,6 +735,8 @@ export declare namespace SipTransferCallRequest {
       [prop: string]: string;
     };
     outcomeTimeoutMs: number;
+    delegation: SipTransferDelegation;
+    delegatedRequestId: string;
   }
   /**
    * Protobuf JSON representation for SipTransferCallRequest
@@ -716,9 +747,182 @@ export declare namespace SipTransferCallRequest {
       [prop: string]: string;
     };
     outcomeTimeoutMs: number;
+    delegation: string;
+    delegatedRequestId: string;
   }
   /**
    * Message implementation for ondewo.sip.SipTransferCallRequest.HeadersEntry
+   */
+  class HeadersEntry implements GrpcMessage {
+    static id: string;
+    /**
+     * Deserialize binary data to message
+     * @param instance message instance
+     */
+    static deserializeBinary(bytes: ByteSource): HeadersEntry;
+    /**
+     * Check all the properties and set default protobuf values if necessary
+     * @param _instance message instance
+     */
+    static refineValues(_instance: HeadersEntry): void;
+    /**
+     * Deserializes / reads binary message into message instance using provided binary reader
+     * @param _instance message instance
+     * @param _reader binary reader instance
+     */
+    static deserializeBinaryFromReader(_instance: HeadersEntry, _reader: BinaryReader): void;
+    /**
+     * Serializes a message to binary format using provided binary reader
+     * @param _instance message instance
+     * @param _writer binary writer instance
+     */
+    static serializeBinaryToWriter(_instance: HeadersEntry, _writer: BinaryWriter): void;
+    private _key;
+    private _value;
+    /**
+     * Message constructor. Initializes the properties and applies default Protobuf values if necessary
+     * @param _value initial values object or instance of HeadersEntry to deeply clone from
+     */
+    constructor(_value?: RecursivePartial<HeadersEntry.AsObject>);
+    get key(): string;
+    set key(value: string);
+    get value(): string;
+    set value(value: string);
+    /**
+     * Serialize message to binary data
+     * @param instance message instance
+     */
+    serializeBinary(): any;
+    /**
+     * Cast message to standard JavaScript object (all non-primitive values are deeply cloned)
+     */
+    toObject(): HeadersEntry.AsObject;
+    /**
+     * Convenience method to support JSON.stringify(message), replicates the structure of toObject()
+     */
+    toJSON(): HeadersEntry.AsObject;
+    /**
+     * Cast message to JSON using protobuf JSON notation: https://developers.google.com/protocol-buffers/docs/proto3#json
+     * Attention: output differs from toObject() e.g. enums are represented as names and not as numbers, Timestamp is an ISO Date string format etc.
+     * If the message itself or some of descendant messages is google.protobuf.Any, you MUST provide a message pool as options. If not, the messagePool is not required
+     */
+    toProtobufJSON(options?: ToProtobufJSONOptions): HeadersEntry.AsProtobufJSON;
+  }
+  namespace HeadersEntry {
+    /**
+     * Standard JavaScript object representation for HeadersEntry
+     */
+    interface AsObject {
+      key: string;
+      value: string;
+    }
+    /**
+     * Protobuf JSON representation for HeadersEntry
+     */
+    interface AsProtobufJSON {
+      key: string;
+      value: string;
+    }
+  }
+}
+/**
+ * Message implementation for ondewo.sip.SipDelegatedTransfer
+ */
+export declare class SipDelegatedTransfer implements GrpcMessage {
+  static id: string;
+  /**
+   * Deserialize binary data to message
+   * @param instance message instance
+   */
+  static deserializeBinary(bytes: ByteSource): SipDelegatedTransfer;
+  /**
+   * Check all the properties and set default protobuf values if necessary
+   * @param _instance message instance
+   */
+  static refineValues(_instance: SipDelegatedTransfer): void;
+  /**
+   * Deserializes / reads binary message into message instance using provided binary reader
+   * @param _instance message instance
+   * @param _reader binary reader instance
+   */
+  static deserializeBinaryFromReader(_instance: SipDelegatedTransfer, _reader: BinaryReader): void;
+  /**
+   * Serializes a message to binary format using provided binary reader
+   * @param _instance message instance
+   * @param _writer binary writer instance
+   */
+  static serializeBinaryToWriter(_instance: SipDelegatedTransfer, _writer: BinaryWriter): void;
+  private _requestId;
+  private _requestedAt?;
+  private _targetIsPhoneNumber;
+  private _transferId;
+  private _headers;
+  /**
+   * Message constructor. Initializes the properties and applies default Protobuf values if necessary
+   * @param _value initial values object or instance of SipDelegatedTransfer to deeply clone from
+   */
+  constructor(_value?: RecursivePartial<SipDelegatedTransfer.AsObject>);
+  get requestId(): string;
+  set requestId(value: string);
+  get requestedAt(): googleProtobuf001.Timestamp | undefined;
+  set requestedAt(value: googleProtobuf001.Timestamp | undefined);
+  get targetIsPhoneNumber(): boolean;
+  set targetIsPhoneNumber(value: boolean);
+  get transferId(): string;
+  set transferId(value: string);
+  get headers(): {
+    [prop: string]: string;
+  };
+  set headers(value: {
+    [prop: string]: string;
+  });
+  /**
+   * Serialize message to binary data
+   * @param instance message instance
+   */
+  serializeBinary(): any;
+  /**
+   * Cast message to standard JavaScript object (all non-primitive values are deeply cloned)
+   */
+  toObject(): SipDelegatedTransfer.AsObject;
+  /**
+   * Convenience method to support JSON.stringify(message), replicates the structure of toObject()
+   */
+  toJSON(): SipDelegatedTransfer.AsObject;
+  /**
+   * Cast message to JSON using protobuf JSON notation: https://developers.google.com/protocol-buffers/docs/proto3#json
+   * Attention: output differs from toObject() e.g. enums are represented as names and not as numbers, Timestamp is an ISO Date string format etc.
+   * If the message itself or some of descendant messages is google.protobuf.Any, you MUST provide a message pool as options. If not, the messagePool is not required
+   */
+  toProtobufJSON(options?: ToProtobufJSONOptions): SipDelegatedTransfer.AsProtobufJSON;
+}
+export declare namespace SipDelegatedTransfer {
+  /**
+   * Standard JavaScript object representation for SipDelegatedTransfer
+   */
+  interface AsObject {
+    requestId: string;
+    requestedAt?: googleProtobuf001.Timestamp.AsObject;
+    targetIsPhoneNumber: boolean;
+    transferId: string;
+    headers: {
+      [prop: string]: string;
+    };
+  }
+  /**
+   * Protobuf JSON representation for SipDelegatedTransfer
+   */
+  interface AsProtobufJSON {
+    requestId: string;
+    requestedAt: googleProtobuf001.Timestamp.AsProtobufJSON | null;
+    targetIsPhoneNumber: boolean;
+    transferId: string;
+    headers: {
+      [prop: string]: string;
+    };
+  }
+  /**
+   * Message implementation for ondewo.sip.SipDelegatedTransfer.HeadersEntry
    */
   class HeadersEntry implements GrpcMessage {
     static id: string;
@@ -835,6 +1039,9 @@ export declare class SipStatus implements GrpcMessage {
   private _listeningPaused;
   private _callAudioStreams;
   private _sipResponseCode;
+  private _delegatedTransfer?;
+  private _capabilities;
+  private _warmTransferOutcomeNoticeStatus;
   /**
    * Message constructor. Initializes the properties and applies default Protobuf values if necessary
    * @param _value initial values object or instance of SipStatus to deeply clone from
@@ -876,6 +1083,12 @@ export declare class SipStatus implements GrpcMessage {
   set callAudioStreams(value: number);
   get sipResponseCode(): number;
   set sipResponseCode(value: number);
+  get delegatedTransfer(): SipDelegatedTransfer | undefined;
+  set delegatedTransfer(value: SipDelegatedTransfer | undefined);
+  get capabilities(): string[];
+  set capabilities(value: string[]);
+  get warmTransferOutcomeNoticeStatus(): SipWarmTransferOutcomeNoticeStatus;
+  set warmTransferOutcomeNoticeStatus(value: SipWarmTransferOutcomeNoticeStatus);
   /**
    * Serialize message to binary data
    * @param instance message instance
@@ -919,6 +1132,9 @@ export declare namespace SipStatus {
     listeningPaused: boolean;
     callAudioStreams: number;
     sipResponseCode: number;
+    delegatedTransfer?: SipDelegatedTransfer.AsObject;
+    capabilities: string[];
+    warmTransferOutcomeNoticeStatus: SipWarmTransferOutcomeNoticeStatus;
   }
   /**
    * Protobuf JSON representation for SipStatus
@@ -942,6 +1158,9 @@ export declare namespace SipStatus {
     listeningPaused: boolean;
     callAudioStreams: number;
     sipResponseCode: number;
+    delegatedTransfer: SipDelegatedTransfer.AsProtobufJSON | null;
+    capabilities: string[];
+    warmTransferOutcomeNoticeStatus: string;
   }
   enum StatusType {
     NO_SESSION = 0,
@@ -1143,6 +1362,7 @@ export declare class SipSetCallMediaControlRequest implements GrpcMessage {
   private _botListening;
   private _owner;
   private _participantsPresent;
+  private _warmTransferOutcome?;
   /**
    * Message constructor. Initializes the properties and applies default Protobuf values if necessary
    * @param _value initial values object or instance of SipSetCallMediaControlRequest to deeply clone from
@@ -1156,6 +1376,8 @@ export declare class SipSetCallMediaControlRequest implements GrpcMessage {
   set owner(value: MediaControlOwner);
   get participantsPresent(): boolean;
   set participantsPresent(value: boolean);
+  get warmTransferOutcome(): SipWarmTransferOutcomeNotice | undefined;
+  set warmTransferOutcome(value: SipWarmTransferOutcomeNotice | undefined);
   /**
    * Serialize message to binary data
    * @param instance message instance
@@ -1185,6 +1407,7 @@ export declare namespace SipSetCallMediaControlRequest {
     botListening: MediaControlSetting;
     owner: MediaControlOwner;
     participantsPresent: boolean;
+    warmTransferOutcome?: SipWarmTransferOutcomeNotice.AsObject;
   }
   /**
    * Protobuf JSON representation for SipSetCallMediaControlRequest
@@ -1194,6 +1417,170 @@ export declare namespace SipSetCallMediaControlRequest {
     botListening: string;
     owner: string;
     participantsPresent: boolean;
+    warmTransferOutcome: SipWarmTransferOutcomeNotice.AsProtobufJSON | null;
+  }
+}
+/**
+ * Message implementation for ondewo.sip.SipWarmTransferOutcomeNotice
+ */
+export declare class SipWarmTransferOutcomeNotice implements GrpcMessage {
+  static id: string;
+  /**
+   * Deserialize binary data to message
+   * @param instance message instance
+   */
+  static deserializeBinary(bytes: ByteSource): SipWarmTransferOutcomeNotice;
+  /**
+   * Check all the properties and set default protobuf values if necessary
+   * @param _instance message instance
+   */
+  static refineValues(_instance: SipWarmTransferOutcomeNotice): void;
+  /**
+   * Deserializes / reads binary message into message instance using provided binary reader
+   * @param _instance message instance
+   * @param _reader binary reader instance
+   */
+  static deserializeBinaryFromReader(_instance: SipWarmTransferOutcomeNotice, _reader: BinaryReader): void;
+  /**
+   * Serializes a message to binary format using provided binary reader
+   * @param _instance message instance
+   * @param _writer binary writer instance
+   */
+  static serializeBinaryToWriter(_instance: SipWarmTransferOutcomeNotice, _writer: BinaryWriter): void;
+  private _requestId;
+  private _outcome;
+  private _introSession;
+  private _calleeDisplayName;
+  private _cause;
+  private _fallbackText;
+  /**
+   * Message constructor. Initializes the properties and applies default Protobuf values if necessary
+   * @param _value initial values object or instance of SipWarmTransferOutcomeNotice to deeply clone from
+   */
+  constructor(_value?: RecursivePartial<SipWarmTransferOutcomeNotice.AsObject>);
+  get requestId(): string;
+  set requestId(value: string);
+  get outcome(): SipWarmTransferOutcome;
+  set outcome(value: SipWarmTransferOutcome);
+  get introSession(): string;
+  set introSession(value: string);
+  get calleeDisplayName(): string;
+  set calleeDisplayName(value: string);
+  get cause(): string;
+  set cause(value: string);
+  get fallbackText(): string;
+  set fallbackText(value: string);
+  /**
+   * Serialize message to binary data
+   * @param instance message instance
+   */
+  serializeBinary(): any;
+  /**
+   * Cast message to standard JavaScript object (all non-primitive values are deeply cloned)
+   */
+  toObject(): SipWarmTransferOutcomeNotice.AsObject;
+  /**
+   * Convenience method to support JSON.stringify(message), replicates the structure of toObject()
+   */
+  toJSON(): SipWarmTransferOutcomeNotice.AsObject;
+  /**
+   * Cast message to JSON using protobuf JSON notation: https://developers.google.com/protocol-buffers/docs/proto3#json
+   * Attention: output differs from toObject() e.g. enums are represented as names and not as numbers, Timestamp is an ISO Date string format etc.
+   * If the message itself or some of descendant messages is google.protobuf.Any, you MUST provide a message pool as options. If not, the messagePool is not required
+   */
+  toProtobufJSON(options?: ToProtobufJSONOptions): SipWarmTransferOutcomeNotice.AsProtobufJSON;
+}
+export declare namespace SipWarmTransferOutcomeNotice {
+  /**
+   * Standard JavaScript object representation for SipWarmTransferOutcomeNotice
+   */
+  interface AsObject {
+    requestId: string;
+    outcome: SipWarmTransferOutcome;
+    introSession: string;
+    calleeDisplayName: string;
+    cause: string;
+    fallbackText: string;
+  }
+  /**
+   * Protobuf JSON representation for SipWarmTransferOutcomeNotice
+   */
+  interface AsProtobufJSON {
+    requestId: string;
+    outcome: string;
+    introSession: string;
+    calleeDisplayName: string;
+    cause: string;
+    fallbackText: string;
+  }
+}
+/**
+ * Message implementation for ondewo.sip.SipSendDtmfRequest
+ */
+export declare class SipSendDtmfRequest implements GrpcMessage {
+  static id: string;
+  /**
+   * Deserialize binary data to message
+   * @param instance message instance
+   */
+  static deserializeBinary(bytes: ByteSource): SipSendDtmfRequest;
+  /**
+   * Check all the properties and set default protobuf values if necessary
+   * @param _instance message instance
+   */
+  static refineValues(_instance: SipSendDtmfRequest): void;
+  /**
+   * Deserializes / reads binary message into message instance using provided binary reader
+   * @param _instance message instance
+   * @param _reader binary reader instance
+   */
+  static deserializeBinaryFromReader(_instance: SipSendDtmfRequest, _reader: BinaryReader): void;
+  /**
+   * Serializes a message to binary format using provided binary reader
+   * @param _instance message instance
+   * @param _writer binary writer instance
+   */
+  static serializeBinaryToWriter(_instance: SipSendDtmfRequest, _writer: BinaryWriter): void;
+  private _digits;
+  /**
+   * Message constructor. Initializes the properties and applies default Protobuf values if necessary
+   * @param _value initial values object or instance of SipSendDtmfRequest to deeply clone from
+   */
+  constructor(_value?: RecursivePartial<SipSendDtmfRequest.AsObject>);
+  get digits(): string;
+  set digits(value: string);
+  /**
+   * Serialize message to binary data
+   * @param instance message instance
+   */
+  serializeBinary(): any;
+  /**
+   * Cast message to standard JavaScript object (all non-primitive values are deeply cloned)
+   */
+  toObject(): SipSendDtmfRequest.AsObject;
+  /**
+   * Convenience method to support JSON.stringify(message), replicates the structure of toObject()
+   */
+  toJSON(): SipSendDtmfRequest.AsObject;
+  /**
+   * Cast message to JSON using protobuf JSON notation: https://developers.google.com/protocol-buffers/docs/proto3#json
+   * Attention: output differs from toObject() e.g. enums are represented as names and not as numbers, Timestamp is an ISO Date string format etc.
+   * If the message itself or some of descendant messages is google.protobuf.Any, you MUST provide a message pool as options. If not, the messagePool is not required
+   */
+  toProtobufJSON(options?: ToProtobufJSONOptions): SipSendDtmfRequest.AsProtobufJSON;
+}
+export declare namespace SipSendDtmfRequest {
+  /**
+   * Standard JavaScript object representation for SipSendDtmfRequest
+   */
+  interface AsObject {
+    digits: string;
+  }
+  /**
+   * Protobuf JSON representation for SipSendDtmfRequest
+   */
+  interface AsProtobufJSON {
+    digits: string;
   }
 }
 /**
@@ -1981,6 +2368,14 @@ export declare class SipClient {
      * @returns Observable<GrpcEvent<thisProto.SipStatus>>
      */
     sipSetCallMediaControl: (requestData: SipSetCallMediaControlRequest, requestMetadata?: GrpcMetadata) => Observable<GrpcEvent<SipStatus>>;
+    /**
+     * Unary call: /ondewo.sip.Sip/SipSendDtmf
+     *
+     * @param requestMessage Request message
+     * @param requestMetadata Request metadata
+     * @returns Observable<GrpcEvent<thisProto.SipStatus>>
+     */
+    sipSendDtmf: (requestData: SipSendDtmfRequest, requestMetadata?: GrpcMetadata) => Observable<GrpcEvent<SipStatus>>;
   };
   constructor(settings: any, clientFactory: GrpcClientFactory<any>, handler: GrpcHandler);
   /**
@@ -2087,6 +2482,14 @@ export declare class SipClient {
    * @returns Observable<thisProto.SipStatus>
    */
   sipSetCallMediaControl(requestData: SipSetCallMediaControlRequest, requestMetadata?: GrpcMetadata): Observable<SipStatus>;
+  /**
+   * Unary call @/ondewo.sip.Sip/SipSendDtmf
+   *
+   * @param requestMessage Request message
+   * @param requestMetadata Request metadata
+   * @returns Observable<thisProto.SipStatus>
+   */
+  sipSendDtmf(requestData: SipSendDtmfRequest, requestMetadata?: GrpcMetadata): Observable<SipStatus>;
   static ɵfac: i0.ɵɵFactoryDeclaration<SipClient, [{
     optional: true;
   }, null, null]>;

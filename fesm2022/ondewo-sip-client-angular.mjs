@@ -8,6 +8,13 @@ import { GRPC_CLIENT_FACTORY, GRPC_INTERCEPTORS, takeMessages, throwStatusErrors
 import { Observable, firstValueFrom, from, isObservable, switchMap } from "rxjs";
 import * as i1 from "@angular/common/http";
 import { HttpHeaders } from "@angular/common/http";
+var SipTransferDelegation;
+(function(SipTransferDelegation) {
+	SipTransferDelegation[SipTransferDelegation["SIP_TRANSFER_DELEGATION_UNSPECIFIED"] = 0] = "SIP_TRANSFER_DELEGATION_UNSPECIFIED";
+	SipTransferDelegation[SipTransferDelegation["SIP_TRANSFER_DELEGATION_CLAIM"] = 1] = "SIP_TRANSFER_DELEGATION_CLAIM";
+	SipTransferDelegation[SipTransferDelegation["SIP_TRANSFER_DELEGATION_EXECUTE"] = 2] = "SIP_TRANSFER_DELEGATION_EXECUTE";
+	SipTransferDelegation[SipTransferDelegation["SIP_TRANSFER_DELEGATION_DISCARD"] = 3] = "SIP_TRANSFER_DELEGATION_DISCARD";
+})(SipTransferDelegation || (SipTransferDelegation = {}));
 var MediaControlSetting;
 (function(MediaControlSetting) {
 	MediaControlSetting[MediaControlSetting["MEDIA_CONTROL_SETTING_UNCHANGED"] = 0] = "MEDIA_CONTROL_SETTING_UNCHANGED";
@@ -20,6 +27,22 @@ var MediaControlOwner;
 	MediaControlOwner[MediaControlOwner["MEDIA_CONTROL_OWNER_OPERATOR"] = 1] = "MEDIA_CONTROL_OWNER_OPERATOR";
 	MediaControlOwner[MediaControlOwner["MEDIA_CONTROL_OWNER_PARTICIPANT"] = 2] = "MEDIA_CONTROL_OWNER_PARTICIPANT";
 })(MediaControlOwner || (MediaControlOwner = {}));
+var SipWarmTransferOutcome;
+(function(SipWarmTransferOutcome) {
+	SipWarmTransferOutcome[SipWarmTransferOutcome["SIP_WARM_TRANSFER_OUTCOME_UNSPECIFIED"] = 0] = "SIP_WARM_TRANSFER_OUTCOME_UNSPECIFIED";
+	SipWarmTransferOutcome[SipWarmTransferOutcome["SIP_WARM_TRANSFER_OUTCOME_DECLINED"] = 1] = "SIP_WARM_TRANSFER_OUTCOME_DECLINED";
+	SipWarmTransferOutcome[SipWarmTransferOutcome["SIP_WARM_TRANSFER_OUTCOME_UNREACHABLE"] = 2] = "SIP_WARM_TRANSFER_OUTCOME_UNREACHABLE";
+	SipWarmTransferOutcome[SipWarmTransferOutcome["SIP_WARM_TRANSFER_OUTCOME_DELEGATION_EXPIRED"] = 3] = "SIP_WARM_TRANSFER_OUTCOME_DELEGATION_EXPIRED";
+})(SipWarmTransferOutcome || (SipWarmTransferOutcome = {}));
+var SipWarmTransferOutcomeNoticeStatus;
+(function(SipWarmTransferOutcomeNoticeStatus) {
+	SipWarmTransferOutcomeNoticeStatus[SipWarmTransferOutcomeNoticeStatus["SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_UNSPECIFIED"] = 0] = "SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_UNSPECIFIED";
+	SipWarmTransferOutcomeNoticeStatus[SipWarmTransferOutcomeNoticeStatus["SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_QUEUED"] = 1] = "SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_QUEUED";
+	SipWarmTransferOutcomeNoticeStatus[SipWarmTransferOutcomeNoticeStatus["SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_DUPLICATE"] = 2] = "SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_DUPLICATE";
+	SipWarmTransferOutcomeNoticeStatus[SipWarmTransferOutcomeNoticeStatus["SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_DISABLED"] = 3] = "SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_DISABLED";
+	SipWarmTransferOutcomeNoticeStatus[SipWarmTransferOutcomeNoticeStatus["SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_INVALID"] = 4] = "SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_INVALID";
+	SipWarmTransferOutcomeNoticeStatus[SipWarmTransferOutcomeNoticeStatus["SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_PENDING"] = 5] = "SIP_WARM_TRANSFER_OUTCOME_NOTICE_STATUS_PENDING";
+})(SipWarmTransferOutcomeNoticeStatus || (SipWarmTransferOutcomeNoticeStatus = {}));
 var SipCallAudioMode;
 (function(SipCallAudioMode) {
 	SipCallAudioMode[SipCallAudioMode["SIP_CALL_AUDIO_MODE_UNSPECIFIED"] = 0] = "SIP_CALL_AUDIO_MODE_UNSPECIFIED";
@@ -718,6 +741,8 @@ var SipTransferCallRequest = class SipTransferCallRequest {
 		_instance.transferId = _instance.transferId || "";
 		_instance.headers = _instance.headers || {};
 		_instance.outcomeTimeoutMs = _instance.outcomeTimeoutMs || 0;
+		_instance.delegation = _instance.delegation || 0;
+		_instance.delegatedRequestId = _instance.delegatedRequestId || "";
 	}
 	static deserializeBinaryFromReader(_instance, _reader) {
 		while (_reader.nextField()) {
@@ -734,6 +759,12 @@ var SipTransferCallRequest = class SipTransferCallRequest {
 					break;
 				case 3:
 					_instance.outcomeTimeoutMs = _reader.readUint32();
+					break;
+				case 4:
+					_instance.delegation = _reader.readEnum();
+					break;
+				case 5:
+					_instance.delegatedRequestId = _reader.readString();
 					break;
 				default: _reader.skipField();
 			}
@@ -753,6 +784,8 @@ var SipTransferCallRequest = class SipTransferCallRequest {
 			}
 		}
 		if (_instance.outcomeTimeoutMs) _writer.writeUint32(3, _instance.outcomeTimeoutMs);
+		if (_instance.delegation) _writer.writeEnum(4, _instance.delegation);
+		if (_instance.delegatedRequestId) _writer.writeString(5, _instance.delegatedRequestId);
 	}
 	constructor(_value) {
 		_value = _value || {};
@@ -761,6 +794,8 @@ var SipTransferCallRequest = class SipTransferCallRequest {
 			...r,
 			[k]: _value.headers[k]
 		}), {}) : {}, this.outcomeTimeoutMs = _value.outcomeTimeoutMs;
+		this.delegation = _value.delegation;
+		this.delegatedRequestId = _value.delegatedRequestId;
 		SipTransferCallRequest.refineValues(this);
 	}
 	get transferId() {
@@ -781,6 +816,18 @@ var SipTransferCallRequest = class SipTransferCallRequest {
 	set outcomeTimeoutMs(value) {
 		this._outcomeTimeoutMs = value;
 	}
+	get delegation() {
+		return this._delegation;
+	}
+	set delegation(value) {
+		this._delegation = value;
+	}
+	get delegatedRequestId() {
+		return this._delegatedRequestId;
+	}
+	set delegatedRequestId(value) {
+		this._delegatedRequestId = value;
+	}
 	serializeBinary() {
 		const writer = new BinaryWriter();
 		SipTransferCallRequest.serializeBinaryToWriter(this, writer);
@@ -793,7 +840,9 @@ var SipTransferCallRequest = class SipTransferCallRequest {
 				...r,
 				[k]: this.headers[k]
 			}), {}) : {},
-			outcomeTimeoutMs: this.outcomeTimeoutMs
+			outcomeTimeoutMs: this.outcomeTimeoutMs,
+			delegation: this.delegation,
+			delegatedRequestId: this.delegatedRequestId
 		};
 	}
 	toJSON() {
@@ -806,7 +855,9 @@ var SipTransferCallRequest = class SipTransferCallRequest {
 				...r,
 				[k]: this.headers[k]
 			}), {}) : {},
-			outcomeTimeoutMs: this.outcomeTimeoutMs
+			outcomeTimeoutMs: this.outcomeTimeoutMs,
+			delegation: SipTransferDelegation[this.delegation === null || this.delegation === void 0 ? 0 : this.delegation],
+			delegatedRequestId: this.delegatedRequestId
 		};
 	}
 };
@@ -884,6 +935,214 @@ var SipTransferCallRequest = class SipTransferCallRequest {
 	}
 	SipTransferCallRequest.HeadersEntry = HeadersEntry;
 })(SipTransferCallRequest || (SipTransferCallRequest = {}));
+var SipDelegatedTransfer = class SipDelegatedTransfer {
+	static {
+		this.id = "ondewo.sip.SipDelegatedTransfer";
+	}
+	static deserializeBinary(bytes) {
+		const instance = new SipDelegatedTransfer();
+		SipDelegatedTransfer.deserializeBinaryFromReader(instance, new BinaryReader(bytes));
+		return instance;
+	}
+	static refineValues(_instance) {
+		_instance.requestId = _instance.requestId || "";
+		_instance.requestedAt = _instance.requestedAt || void 0;
+		_instance.targetIsPhoneNumber = _instance.targetIsPhoneNumber || false;
+		_instance.transferId = _instance.transferId || "";
+		_instance.headers = _instance.headers || {};
+	}
+	static deserializeBinaryFromReader(_instance, _reader) {
+		while (_reader.nextField()) {
+			if (_reader.isEndGroup()) break;
+			switch (_reader.getFieldNumber()) {
+				case 1:
+					_instance.requestId = _reader.readString();
+					break;
+				case 2:
+					_instance.requestedAt = new googleProtobuf001.Timestamp();
+					_reader.readMessage(_instance.requestedAt, googleProtobuf001.Timestamp.deserializeBinaryFromReader);
+					break;
+				case 3:
+					_instance.targetIsPhoneNumber = _reader.readBool();
+					break;
+				case 4:
+					_instance.transferId = _reader.readString();
+					break;
+				case 5:
+					const msg_5 = {};
+					_reader.readMessage(msg_5, SipDelegatedTransfer.HeadersEntry.deserializeBinaryFromReader);
+					_instance.headers = _instance.headers || {};
+					_instance.headers[msg_5.key] = msg_5.value;
+					break;
+				default: _reader.skipField();
+			}
+		}
+		SipDelegatedTransfer.refineValues(_instance);
+	}
+	static serializeBinaryToWriter(_instance, _writer) {
+		if (_instance.requestId) _writer.writeString(1, _instance.requestId);
+		if (_instance.requestedAt) _writer.writeMessage(2, _instance.requestedAt, googleProtobuf001.Timestamp.serializeBinaryToWriter);
+		if (_instance.targetIsPhoneNumber) _writer.writeBool(3, _instance.targetIsPhoneNumber);
+		if (_instance.transferId) _writer.writeString(4, _instance.transferId);
+		if (!!_instance.headers) {
+			const keys_5 = Object.keys(_instance.headers);
+			if (keys_5.length) {
+				const repeated_5 = keys_5.map((key) => ({
+					key,
+					value: _instance.headers[key]
+				})).reduce((r, v) => [...r, v], []);
+				_writer.writeRepeatedMessage(5, repeated_5, SipDelegatedTransfer.HeadersEntry.serializeBinaryToWriter);
+			}
+		}
+	}
+	constructor(_value) {
+		_value = _value || {};
+		this.requestId = _value.requestId;
+		this.requestedAt = _value.requestedAt ? new googleProtobuf001.Timestamp(_value.requestedAt) : void 0;
+		this.targetIsPhoneNumber = _value.targetIsPhoneNumber;
+		this.transferId = _value.transferId;
+		this.headers = _value.headers ? Object.keys(_value.headers).reduce((r, k) => ({
+			...r,
+			[k]: _value.headers[k]
+		}), {}) : {}, SipDelegatedTransfer.refineValues(this);
+	}
+	get requestId() {
+		return this._requestId;
+	}
+	set requestId(value) {
+		this._requestId = value;
+	}
+	get requestedAt() {
+		return this._requestedAt;
+	}
+	set requestedAt(value) {
+		this._requestedAt = value;
+	}
+	get targetIsPhoneNumber() {
+		return this._targetIsPhoneNumber;
+	}
+	set targetIsPhoneNumber(value) {
+		this._targetIsPhoneNumber = value;
+	}
+	get transferId() {
+		return this._transferId;
+	}
+	set transferId(value) {
+		this._transferId = value;
+	}
+	get headers() {
+		return this._headers;
+	}
+	set headers(value) {
+		this._headers = value;
+	}
+	serializeBinary() {
+		const writer = new BinaryWriter();
+		SipDelegatedTransfer.serializeBinaryToWriter(this, writer);
+		return writer.getResultBuffer();
+	}
+	toObject() {
+		return {
+			requestId: this.requestId,
+			requestedAt: this.requestedAt ? this.requestedAt.toObject() : void 0,
+			targetIsPhoneNumber: this.targetIsPhoneNumber,
+			transferId: this.transferId,
+			headers: this.headers ? Object.keys(this.headers).reduce((r, k) => ({
+				...r,
+				[k]: this.headers[k]
+			}), {}) : {}
+		};
+	}
+	toJSON() {
+		return this.toObject();
+	}
+	toProtobufJSON(options) {
+		return {
+			requestId: this.requestId,
+			requestedAt: this.requestedAt ? this.requestedAt.toProtobufJSON(options) : null,
+			targetIsPhoneNumber: this.targetIsPhoneNumber,
+			transferId: this.transferId,
+			headers: this.headers ? Object.keys(this.headers).reduce((r, k) => ({
+				...r,
+				[k]: this.headers[k]
+			}), {}) : {}
+		};
+	}
+};
+(function(SipDelegatedTransfer) {
+	class HeadersEntry {
+		static {
+			this.id = "ondewo.sip.SipDelegatedTransfer.HeadersEntry";
+		}
+		static deserializeBinary(bytes) {
+			const instance = new HeadersEntry();
+			HeadersEntry.deserializeBinaryFromReader(instance, new BinaryReader(bytes));
+			return instance;
+		}
+		static refineValues(_instance) {
+			_instance.key = _instance.key || "";
+			_instance.value = _instance.value || "";
+		}
+		static deserializeBinaryFromReader(_instance, _reader) {
+			while (_reader.nextField()) {
+				if (_reader.isEndGroup()) break;
+				switch (_reader.getFieldNumber()) {
+					case 1:
+						_instance.key = _reader.readString();
+						break;
+					case 2:
+						_instance.value = _reader.readString();
+						break;
+					default: _reader.skipField();
+				}
+			}
+			HeadersEntry.refineValues(_instance);
+		}
+		static serializeBinaryToWriter(_instance, _writer) {
+			if (_instance.key) _writer.writeString(1, _instance.key);
+			if (_instance.value) _writer.writeString(2, _instance.value);
+		}
+		constructor(_value) {
+			_value = _value || {};
+			this.key = _value.key;
+			this.value = _value.value;
+			HeadersEntry.refineValues(this);
+		}
+		get key() {
+			return this._key;
+		}
+		set key(value) {
+			this._key = value;
+		}
+		get value() {
+			return this._value;
+		}
+		set value(value) {
+			this._value = value;
+		}
+		serializeBinary() {
+			const writer = new BinaryWriter();
+			HeadersEntry.serializeBinaryToWriter(this, writer);
+			return writer.getResultBuffer();
+		}
+		toObject() {
+			return {
+				key: this.key,
+				value: this.value
+			};
+		}
+		toJSON() {
+			return this.toObject();
+		}
+		toProtobufJSON(options) {
+			return {
+				key: this.key,
+				value: this.value
+			};
+		}
+	}
+	SipDelegatedTransfer.HeadersEntry = HeadersEntry;
+})(SipDelegatedTransfer || (SipDelegatedTransfer = {}));
 var SipStatus = class SipStatus {
 	static {
 		this.id = "ondewo.sip.SipStatus";
@@ -910,6 +1169,9 @@ var SipStatus = class SipStatus {
 		_instance.listeningPaused = _instance.listeningPaused || false;
 		_instance.callAudioStreams = _instance.callAudioStreams || 0;
 		_instance.sipResponseCode = _instance.sipResponseCode || 0;
+		_instance.delegatedTransfer = _instance.delegatedTransfer || void 0;
+		_instance.capabilities = _instance.capabilities || [];
+		_instance.warmTransferOutcomeNoticeStatus = _instance.warmTransferOutcomeNoticeStatus || 0;
 	}
 	static deserializeBinaryFromReader(_instance, _reader) {
 		while (_reader.nextField()) {
@@ -968,6 +1230,16 @@ var SipStatus = class SipStatus {
 				case 16:
 					_instance.sipResponseCode = _reader.readInt32();
 					break;
+				case 17:
+					_instance.delegatedTransfer = new SipDelegatedTransfer();
+					_reader.readMessage(_instance.delegatedTransfer, SipDelegatedTransfer.deserializeBinaryFromReader);
+					break;
+				case 18:
+					(_instance.capabilities = _instance.capabilities || []).push(_reader.readString());
+					break;
+				case 19:
+					_instance.warmTransferOutcomeNoticeStatus = _reader.readEnum();
+					break;
 				default: _reader.skipField();
 			}
 		}
@@ -999,6 +1271,9 @@ var SipStatus = class SipStatus {
 		if (_instance.listeningPaused) _writer.writeBool(14, _instance.listeningPaused);
 		if (_instance.callAudioStreams) _writer.writeInt32(15, _instance.callAudioStreams);
 		if (_instance.sipResponseCode) _writer.writeInt32(16, _instance.sipResponseCode);
+		if (_instance.delegatedTransfer) _writer.writeMessage(17, _instance.delegatedTransfer, SipDelegatedTransfer.serializeBinaryToWriter);
+		if (_instance.capabilities && _instance.capabilities.length) _writer.writeRepeatedString(18, _instance.capabilities);
+		if (_instance.warmTransferOutcomeNoticeStatus) _writer.writeEnum(19, _instance.warmTransferOutcomeNoticeStatus);
 	}
 	constructor(_value) {
 		_value = _value || {};
@@ -1020,6 +1295,9 @@ var SipStatus = class SipStatus {
 		this.listeningPaused = _value.listeningPaused;
 		this.callAudioStreams = _value.callAudioStreams;
 		this.sipResponseCode = _value.sipResponseCode;
+		this.delegatedTransfer = _value.delegatedTransfer ? new SipDelegatedTransfer(_value.delegatedTransfer) : void 0;
+		this.capabilities = (_value.capabilities || []).slice();
+		this.warmTransferOutcomeNoticeStatus = _value.warmTransferOutcomeNoticeStatus;
 		SipStatus.refineValues(this);
 	}
 	get accountName() {
@@ -1118,6 +1396,24 @@ var SipStatus = class SipStatus {
 	set sipResponseCode(value) {
 		this._sipResponseCode = value;
 	}
+	get delegatedTransfer() {
+		return this._delegatedTransfer;
+	}
+	set delegatedTransfer(value) {
+		this._delegatedTransfer = value;
+	}
+	get capabilities() {
+		return this._capabilities;
+	}
+	set capabilities(value) {
+		this._capabilities = value;
+	}
+	get warmTransferOutcomeNoticeStatus() {
+		return this._warmTransferOutcomeNoticeStatus;
+	}
+	set warmTransferOutcomeNoticeStatus(value) {
+		this._warmTransferOutcomeNoticeStatus = value;
+	}
 	serializeBinary() {
 		const writer = new BinaryWriter();
 		SipStatus.serializeBinaryToWriter(this, writer);
@@ -1143,7 +1439,10 @@ var SipStatus = class SipStatus {
 			botMuted: this.botMuted,
 			listeningPaused: this.listeningPaused,
 			callAudioStreams: this.callAudioStreams,
-			sipResponseCode: this.sipResponseCode
+			sipResponseCode: this.sipResponseCode,
+			delegatedTransfer: this.delegatedTransfer ? this.delegatedTransfer.toObject() : void 0,
+			capabilities: (this.capabilities || []).slice(),
+			warmTransferOutcomeNoticeStatus: this.warmTransferOutcomeNoticeStatus
 		};
 	}
 	toJSON() {
@@ -1169,7 +1468,10 @@ var SipStatus = class SipStatus {
 			botMuted: this.botMuted,
 			listeningPaused: this.listeningPaused,
 			callAudioStreams: this.callAudioStreams,
-			sipResponseCode: this.sipResponseCode
+			sipResponseCode: this.sipResponseCode,
+			delegatedTransfer: this.delegatedTransfer ? this.delegatedTransfer.toProtobufJSON(options) : null,
+			capabilities: (this.capabilities || []).slice(),
+			warmTransferOutcomeNoticeStatus: SipWarmTransferOutcomeNoticeStatus[this.warmTransferOutcomeNoticeStatus === null || this.warmTransferOutcomeNoticeStatus === void 0 ? 0 : this.warmTransferOutcomeNoticeStatus]
 		};
 	}
 };
@@ -1341,6 +1643,7 @@ var SipSetCallMediaControlRequest = class SipSetCallMediaControlRequest {
 		_instance.botListening = _instance.botListening || 0;
 		_instance.owner = _instance.owner || 0;
 		_instance.participantsPresent = _instance.participantsPresent || false;
+		_instance.warmTransferOutcome = _instance.warmTransferOutcome || void 0;
 	}
 	static deserializeBinaryFromReader(_instance, _reader) {
 		while (_reader.nextField()) {
@@ -1358,6 +1661,10 @@ var SipSetCallMediaControlRequest = class SipSetCallMediaControlRequest {
 				case 4:
 					_instance.participantsPresent = _reader.readBool();
 					break;
+				case 5:
+					_instance.warmTransferOutcome = new SipWarmTransferOutcomeNotice();
+					_reader.readMessage(_instance.warmTransferOutcome, SipWarmTransferOutcomeNotice.deserializeBinaryFromReader);
+					break;
 				default: _reader.skipField();
 			}
 		}
@@ -1368,6 +1675,7 @@ var SipSetCallMediaControlRequest = class SipSetCallMediaControlRequest {
 		if (_instance.botListening) _writer.writeEnum(2, _instance.botListening);
 		if (_instance.owner) _writer.writeEnum(3, _instance.owner);
 		if (_instance.participantsPresent) _writer.writeBool(4, _instance.participantsPresent);
+		if (_instance.warmTransferOutcome) _writer.writeMessage(5, _instance.warmTransferOutcome, SipWarmTransferOutcomeNotice.serializeBinaryToWriter);
 	}
 	constructor(_value) {
 		_value = _value || {};
@@ -1375,6 +1683,7 @@ var SipSetCallMediaControlRequest = class SipSetCallMediaControlRequest {
 		this.botListening = _value.botListening;
 		this.owner = _value.owner;
 		this.participantsPresent = _value.participantsPresent;
+		this.warmTransferOutcome = _value.warmTransferOutcome ? new SipWarmTransferOutcomeNotice(_value.warmTransferOutcome) : void 0;
 		SipSetCallMediaControlRequest.refineValues(this);
 	}
 	get botVoice() {
@@ -1401,6 +1710,12 @@ var SipSetCallMediaControlRequest = class SipSetCallMediaControlRequest {
 	set participantsPresent(value) {
 		this._participantsPresent = value;
 	}
+	get warmTransferOutcome() {
+		return this._warmTransferOutcome;
+	}
+	set warmTransferOutcome(value) {
+		this._warmTransferOutcome = value;
+	}
 	serializeBinary() {
 		const writer = new BinaryWriter();
 		SipSetCallMediaControlRequest.serializeBinaryToWriter(this, writer);
@@ -1411,7 +1726,8 @@ var SipSetCallMediaControlRequest = class SipSetCallMediaControlRequest {
 			botVoice: this.botVoice,
 			botListening: this.botListening,
 			owner: this.owner,
-			participantsPresent: this.participantsPresent
+			participantsPresent: this.participantsPresent,
+			warmTransferOutcome: this.warmTransferOutcome ? this.warmTransferOutcome.toObject() : void 0
 		};
 	}
 	toJSON() {
@@ -1422,8 +1738,189 @@ var SipSetCallMediaControlRequest = class SipSetCallMediaControlRequest {
 			botVoice: MediaControlSetting[this.botVoice === null || this.botVoice === void 0 ? 0 : this.botVoice],
 			botListening: MediaControlSetting[this.botListening === null || this.botListening === void 0 ? 0 : this.botListening],
 			owner: MediaControlOwner[this.owner === null || this.owner === void 0 ? 0 : this.owner],
-			participantsPresent: this.participantsPresent
+			participantsPresent: this.participantsPresent,
+			warmTransferOutcome: this.warmTransferOutcome ? this.warmTransferOutcome.toProtobufJSON(options) : null
 		};
+	}
+};
+var SipWarmTransferOutcomeNotice = class SipWarmTransferOutcomeNotice {
+	static {
+		this.id = "ondewo.sip.SipWarmTransferOutcomeNotice";
+	}
+	static deserializeBinary(bytes) {
+		const instance = new SipWarmTransferOutcomeNotice();
+		SipWarmTransferOutcomeNotice.deserializeBinaryFromReader(instance, new BinaryReader(bytes));
+		return instance;
+	}
+	static refineValues(_instance) {
+		_instance.requestId = _instance.requestId || "";
+		_instance.outcome = _instance.outcome || 0;
+		_instance.introSession = _instance.introSession || "";
+		_instance.calleeDisplayName = _instance.calleeDisplayName || "";
+		_instance.cause = _instance.cause || "";
+		_instance.fallbackText = _instance.fallbackText || "";
+	}
+	static deserializeBinaryFromReader(_instance, _reader) {
+		while (_reader.nextField()) {
+			if (_reader.isEndGroup()) break;
+			switch (_reader.getFieldNumber()) {
+				case 1:
+					_instance.requestId = _reader.readString();
+					break;
+				case 2:
+					_instance.outcome = _reader.readEnum();
+					break;
+				case 3:
+					_instance.introSession = _reader.readString();
+					break;
+				case 4:
+					_instance.calleeDisplayName = _reader.readString();
+					break;
+				case 5:
+					_instance.cause = _reader.readString();
+					break;
+				case 6:
+					_instance.fallbackText = _reader.readString();
+					break;
+				default: _reader.skipField();
+			}
+		}
+		SipWarmTransferOutcomeNotice.refineValues(_instance);
+	}
+	static serializeBinaryToWriter(_instance, _writer) {
+		if (_instance.requestId) _writer.writeString(1, _instance.requestId);
+		if (_instance.outcome) _writer.writeEnum(2, _instance.outcome);
+		if (_instance.introSession) _writer.writeString(3, _instance.introSession);
+		if (_instance.calleeDisplayName) _writer.writeString(4, _instance.calleeDisplayName);
+		if (_instance.cause) _writer.writeString(5, _instance.cause);
+		if (_instance.fallbackText) _writer.writeString(6, _instance.fallbackText);
+	}
+	constructor(_value) {
+		_value = _value || {};
+		this.requestId = _value.requestId;
+		this.outcome = _value.outcome;
+		this.introSession = _value.introSession;
+		this.calleeDisplayName = _value.calleeDisplayName;
+		this.cause = _value.cause;
+		this.fallbackText = _value.fallbackText;
+		SipWarmTransferOutcomeNotice.refineValues(this);
+	}
+	get requestId() {
+		return this._requestId;
+	}
+	set requestId(value) {
+		this._requestId = value;
+	}
+	get outcome() {
+		return this._outcome;
+	}
+	set outcome(value) {
+		this._outcome = value;
+	}
+	get introSession() {
+		return this._introSession;
+	}
+	set introSession(value) {
+		this._introSession = value;
+	}
+	get calleeDisplayName() {
+		return this._calleeDisplayName;
+	}
+	set calleeDisplayName(value) {
+		this._calleeDisplayName = value;
+	}
+	get cause() {
+		return this._cause;
+	}
+	set cause(value) {
+		this._cause = value;
+	}
+	get fallbackText() {
+		return this._fallbackText;
+	}
+	set fallbackText(value) {
+		this._fallbackText = value;
+	}
+	serializeBinary() {
+		const writer = new BinaryWriter();
+		SipWarmTransferOutcomeNotice.serializeBinaryToWriter(this, writer);
+		return writer.getResultBuffer();
+	}
+	toObject() {
+		return {
+			requestId: this.requestId,
+			outcome: this.outcome,
+			introSession: this.introSession,
+			calleeDisplayName: this.calleeDisplayName,
+			cause: this.cause,
+			fallbackText: this.fallbackText
+		};
+	}
+	toJSON() {
+		return this.toObject();
+	}
+	toProtobufJSON(options) {
+		return {
+			requestId: this.requestId,
+			outcome: SipWarmTransferOutcome[this.outcome === null || this.outcome === void 0 ? 0 : this.outcome],
+			introSession: this.introSession,
+			calleeDisplayName: this.calleeDisplayName,
+			cause: this.cause,
+			fallbackText: this.fallbackText
+		};
+	}
+};
+var SipSendDtmfRequest = class SipSendDtmfRequest {
+	static {
+		this.id = "ondewo.sip.SipSendDtmfRequest";
+	}
+	static deserializeBinary(bytes) {
+		const instance = new SipSendDtmfRequest();
+		SipSendDtmfRequest.deserializeBinaryFromReader(instance, new BinaryReader(bytes));
+		return instance;
+	}
+	static refineValues(_instance) {
+		_instance.digits = _instance.digits || "";
+	}
+	static deserializeBinaryFromReader(_instance, _reader) {
+		while (_reader.nextField()) {
+			if (_reader.isEndGroup()) break;
+			switch (_reader.getFieldNumber()) {
+				case 1:
+					_instance.digits = _reader.readString();
+					break;
+				default: _reader.skipField();
+			}
+		}
+		SipSendDtmfRequest.refineValues(_instance);
+	}
+	static serializeBinaryToWriter(_instance, _writer) {
+		if (_instance.digits) _writer.writeString(1, _instance.digits);
+	}
+	constructor(_value) {
+		_value = _value || {};
+		this.digits = _value.digits;
+		SipSendDtmfRequest.refineValues(this);
+	}
+	get digits() {
+		return this._digits;
+	}
+	set digits(value) {
+		this._digits = value;
+	}
+	serializeBinary() {
+		const writer = new BinaryWriter();
+		SipSendDtmfRequest.serializeBinaryToWriter(this, writer);
+		return writer.getResultBuffer();
+	}
+	toObject() {
+		return { digits: this.digits };
+	}
+	toJSON() {
+		return this.toObject();
+	}
+	toProtobufJSON(options) {
+		return { digits: this.digits };
 	}
 };
 var SipCallAudioConfig = class SipCallAudioConfig {
@@ -2341,6 +2838,17 @@ var SipClient = class SipClient {
 					requestClass: SipSetCallMediaControlRequest,
 					responseClass: SipStatus
 				});
+			},
+			sipSendDtmf: (requestData, requestMetadata = new GrpcMetadata()) => {
+				return this.handler.handle({
+					type: GrpcCallType.unary,
+					client: this.client,
+					path: "/ondewo.sip.Sip/SipSendDtmf",
+					requestData,
+					requestMetadata,
+					requestClass: SipSendDtmfRequest,
+					responseClass: SipStatus
+				});
 			}
 		};
 		this.client = clientFactory.createClient("ondewo.sip.Sip", settings);
@@ -2384,10 +2892,13 @@ var SipClient = class SipClient {
 	sipSetCallMediaControl(requestData, requestMetadata = new GrpcMetadata()) {
 		return this.$raw.sipSetCallMediaControl(requestData, requestMetadata).pipe(throwStatusErrors(), takeMessages());
 	}
+	sipSendDtmf(requestData, requestMetadata = new GrpcMetadata()) {
+		return this.$raw.sipSendDtmf(requestData, requestMetadata).pipe(throwStatusErrors(), takeMessages());
+	}
 	static {
 		this.ɵfac = i0.ɵɵngDeclareFactory({
 			minVersion: "12.0.0",
-			version: "22.2.6",
+			version: "22.3.0",
 			ngImport: i0,
 			type: SipClient,
 			deps: [
@@ -2404,7 +2915,7 @@ var SipClient = class SipClient {
 	static {
 		this.ɵprov = i0.ɵɵngDeclareInjectable({
 			minVersion: "12.0.0",
-			version: "22.2.6",
+			version: "22.3.0",
 			ngImport: i0,
 			type: SipClient,
 			providedIn: "any"
@@ -2413,7 +2924,7 @@ var SipClient = class SipClient {
 };
 i0.ɵɵngDeclareClassMetadata({
 	minVersion: "12.0.0",
-	version: "22.2.6",
+	version: "22.3.0",
 	ngImport: i0,
 	type: SipClient,
 	decorators: [{
@@ -2491,7 +3002,7 @@ var AuthGrpcInterceptor = class AuthGrpcInterceptor {
 	static {
 		this.ɵfac = i0.ɵɵngDeclareFactory({
 			minVersion: "12.0.0",
-			version: "22.2.6",
+			version: "22.3.0",
 			ngImport: i0,
 			type: AuthGrpcInterceptor,
 			deps: [{ token: TOKEN_PROVIDER }],
@@ -2501,7 +3012,7 @@ var AuthGrpcInterceptor = class AuthGrpcInterceptor {
 	static {
 		this.ɵprov = i0.ɵɵngDeclareInjectable({
 			minVersion: "12.0.0",
-			version: "22.2.6",
+			version: "22.3.0",
 			ngImport: i0,
 			type: AuthGrpcInterceptor
 		});
@@ -2509,7 +3020,7 @@ var AuthGrpcInterceptor = class AuthGrpcInterceptor {
 };
 i0.ɵɵngDeclareClassMetadata({
 	minVersion: "12.0.0",
-	version: "22.2.6",
+	version: "22.3.0",
 	ngImport: i0,
 	type: AuthGrpcInterceptor,
 	decorators: [{ type: Injectable }],
@@ -2650,7 +3161,7 @@ var KeycloakTokenProvider = class KeycloakTokenProvider {
 	static {
 		this.ɵfac = i0.ɵɵngDeclareFactory({
 			minVersion: "12.0.0",
-			version: "22.2.6",
+			version: "22.3.0",
 			ngImport: i0,
 			type: KeycloakTokenProvider,
 			deps: [
@@ -2667,7 +3178,7 @@ var KeycloakTokenProvider = class KeycloakTokenProvider {
 	static {
 		this.ɵprov = i0.ɵɵngDeclareInjectable({
 			minVersion: "12.0.0",
-			version: "22.2.6",
+			version: "22.3.0",
 			ngImport: i0,
 			type: KeycloakTokenProvider,
 			providedIn: "root"
@@ -2676,7 +3187,7 @@ var KeycloakTokenProvider = class KeycloakTokenProvider {
 };
 i0.ɵɵngDeclareClassMetadata({
 	minVersion: "12.0.0",
-	version: "22.2.6",
+	version: "22.3.0",
 	ngImport: i0,
 	type: KeycloakTokenProvider,
 	decorators: [{
@@ -2773,6 +3284,6 @@ function buildGrpcWebHost(config) {
 function warnInsecure(authority) {
 	console.warn(`ONDEWO gRPC-web: insecure http:// endpoint ${authority}; requests and bearer tokens are sent unencrypted. Use useSecureChannel: true (https://) outside local development.`);
 }
-export { AUTHORIZATION_HEADER, AnsweringMachineDetectionResult, AuthGrpcInterceptor, BEARER_PREFIX, BROWSER_UNSUPPORTED_TLS_FIELDS, GRPC_SIP_CLIENT_SETTINGS, GrpcWebEndpointError, KEYCLOAK_TOKEN_PROVIDER_CONFIG, KeycloakAuthenticationError, KeycloakTokenProvider, MIN_REFRESH_DELAY_IN_S, MediaControlOwner, MediaControlSetting, REFRESH_SKEW_IN_S, SipCallAudioConfig, SipCallAudioEndReason, SipCallAudioEnded, SipCallAudioFrame, SipCallAudioMode, SipCallAudioRequest, SipCallAudioResponse, SipCallAudioStarted, SipCallAudioStats, SipClient, SipEndCallRequest, SipPlayWavFilesRequest, SipRegisterAccountRequest, SipReportAnsweringMachineDetectedRequest, SipSetCallMediaControlRequest, SipStartCallRequest, SipStartSessionRequest, SipStatus, SipStatusHistoryResponse, SipTransferCallRequest, TOKEN_PROVIDER, authHttpInterceptor, buildBearerValue, buildGrpcWebHost, provideKeycloakTokenProvider, provideOndewoSipAuth, resolveBearerValue, resolveToken };
+export { AUTHORIZATION_HEADER, AnsweringMachineDetectionResult, AuthGrpcInterceptor, BEARER_PREFIX, BROWSER_UNSUPPORTED_TLS_FIELDS, GRPC_SIP_CLIENT_SETTINGS, GrpcWebEndpointError, KEYCLOAK_TOKEN_PROVIDER_CONFIG, KeycloakAuthenticationError, KeycloakTokenProvider, MIN_REFRESH_DELAY_IN_S, MediaControlOwner, MediaControlSetting, REFRESH_SKEW_IN_S, SipCallAudioConfig, SipCallAudioEndReason, SipCallAudioEnded, SipCallAudioFrame, SipCallAudioMode, SipCallAudioRequest, SipCallAudioResponse, SipCallAudioStarted, SipCallAudioStats, SipClient, SipDelegatedTransfer, SipEndCallRequest, SipPlayWavFilesRequest, SipRegisterAccountRequest, SipReportAnsweringMachineDetectedRequest, SipSendDtmfRequest, SipSetCallMediaControlRequest, SipStartCallRequest, SipStartSessionRequest, SipStatus, SipStatusHistoryResponse, SipTransferCallRequest, SipTransferDelegation, SipWarmTransferOutcome, SipWarmTransferOutcomeNotice, SipWarmTransferOutcomeNoticeStatus, TOKEN_PROVIDER, authHttpInterceptor, buildBearerValue, buildGrpcWebHost, provideKeycloakTokenProvider, provideOndewoSipAuth, resolveBearerValue, resolveToken };
 
 //# sourceMappingURL=ondewo-sip-client-angular.mjs.map

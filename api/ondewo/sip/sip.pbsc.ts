@@ -308,6 +308,27 @@ export class SipClient {
         requestClass: thisProto.SipSetCallMediaControlRequest,
         responseClass: thisProto.SipStatus
       });
+    },
+    /**
+     * Unary call: /ondewo.sip.Sip/SipSendDtmf
+     *
+     * @param requestMessage Request message
+     * @param requestMetadata Request metadata
+     * @returns Observable<GrpcEvent<thisProto.SipStatus>>
+     */
+    sipSendDtmf: (
+      requestData: thisProto.SipSendDtmfRequest,
+      requestMetadata = new GrpcMetadata()
+    ): Observable<GrpcEvent<thisProto.SipStatus>> => {
+      return this.handler.handle({
+        type: GrpcCallType.unary,
+        client: this.client,
+        path: '/ondewo.sip.Sip/SipSendDtmf',
+        requestData,
+        requestMetadata,
+        requestClass: thisProto.SipSendDtmfRequest,
+        responseClass: thisProto.SipStatus
+      });
     }
   };
 
@@ -524,6 +545,22 @@ export class SipClient {
   ): Observable<thisProto.SipStatus> {
     return this.$raw
       .sipSetCallMediaControl(requestData, requestMetadata)
+      .pipe(throwStatusErrors(), takeMessages());
+  }
+
+  /**
+   * Unary call @/ondewo.sip.Sip/SipSendDtmf
+   *
+   * @param requestMessage Request message
+   * @param requestMetadata Request metadata
+   * @returns Observable<thisProto.SipStatus>
+   */
+  sipSendDtmf(
+    requestData: thisProto.SipSendDtmfRequest,
+    requestMetadata = new GrpcMetadata()
+  ): Observable<thisProto.SipStatus> {
+    return this.$raw
+      .sipSendDtmf(requestData, requestMetadata)
       .pipe(throwStatusErrors(), takeMessages());
   }
 }

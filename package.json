@@ -1,6 +1,6 @@
 {
 	"name": "@ondewo/sip-client-angular",
-	"version": "5.5.2",
+	"version": "5.7.0",
 	"description": "ONDEWO Session Initiation Protocol (SIP) Client library for Angular",
 	"author": "ONDEWO GmbH <office@ondewo.com>",
 	"homepage": "https://ondewo.com",
@@ -24,8 +24,8 @@
 	"peerDependencies": {
 		"@angular/common": ">=20.0.0 <23.0.0",
 		"@angular/core": ">=20.0.0 <23.0.0",
-		"@ngx-grpc/common": ">=3.1.2",
-		"@ngx-grpc/core": ">=3.1.2"
+		"@ngx-grpc/common": "~3.1.2",
+		"@ngx-grpc/core": "~3.1.2"
 	},
 	"module": "fesm2022/ondewo-sip-client-angular.mjs",
 	"typings": "types/ondewo-sip-client-angular.d.ts",
@@ -58,6 +58,8 @@
 		"@typescript-eslint/typescript-estree": "^8.56.0",
 		"eslint": "^9.36.0",
 		"global": "^4.4.0",
+		"google-protobuf": "~3.21.4",
+		"grpc-web": "2.1.1",
 		"husky": "^9.1.7",
 		"jest": "^30.5.2",
 		"jest-environment-jsdom": "^30.5.2",
@@ -69,6 +71,9 @@
 		"ts-jest": "29.4.14",
 		"typescript": "^5.9.3",
 		"zone.js": "^0.15.1"
+	},
+	"overrides": {
+		"grpc-web": "$grpc-web"
 	},
 	"allowScripts": {
 		"@parcel/watcher@2.6.0": true,
