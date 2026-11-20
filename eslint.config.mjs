@@ -26,7 +26,9 @@ export default [
 			'**/ondewo-proto-compiler',
 			'**/*.mjs',
 			'**/index.d.ts',
-			'types/'
+			'types/',
+			// ng-packagr 22 build output: its typings moved from npm/index.d.ts to npm/types/
+			'npm/'
 		]
 	},
 	...compat.extends(
