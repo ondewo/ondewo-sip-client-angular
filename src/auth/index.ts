@@ -18,6 +18,7 @@ export { authHttpInterceptor } from "./auth-http.interceptor";
 export { AuthGrpcInterceptor } from "./auth-grpc.interceptor";
 export { provideKeycloakTokenProvider, provideOndewoSipAuth } from "./auth.providers";
 export {
+  EnsureFreshTokenOptions,
   KEYCLOAK_TOKEN_PROVIDER_CONFIG,
   KeycloakAuthenticationError,
   KeycloakTokenProvider,
@@ -25,6 +26,33 @@ export {
   MIN_REFRESH_DELAY_IN_S,
   REFRESH_SKEW_IN_S
 } from "./keycloak-token-provider";
+export {
+  acquireKeycloakTokenSession,
+  backoffDelayInS,
+  CONSOLE_KEYCLOAK_LOGGER,
+  DEFAULT_KEYCLOAK_TIMINGS,
+  GLOBAL_KEYCLOAK_SCHEDULER,
+  HTTP_TIMEOUT_IN_S,
+  KeycloakAccessTokenOptions,
+  KeycloakCredentialFields,
+  KeycloakLogger,
+  KeycloakScheduler,
+  keycloakSessionRegistryKey,
+  KeycloakTimings,
+  KeycloakTokenHttpResponse,
+  KeycloakTokenRequest,
+  KeycloakTokenSession,
+  KeycloakTokenSessionLease,
+  KeycloakTokenSessionOptions,
+  KeycloakTokenTransport,
+  KeycloakTransportError,
+  MAX_ERROR_BODY_CHARS,
+  MAX_REFRESH_RETRY_EXPONENT,
+  REDACTED,
+  redactSecret,
+  REFRESH_RETRY_BASE_DELAY_IN_S,
+  REFRESH_RETRY_MAX_DELAY_IN_S
+} from "./keycloak-token-session";
 export {
   BROWSER_UNSUPPORTED_TLS_FIELDS,
   buildGrpcWebHost,

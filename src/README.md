@@ -75,6 +75,73 @@ npm
 └── README.md
 ```
 
+## Keycloak bearer authentication
+
+### The built-in `KeycloakTokenProvider`
+
+For a technical user the built-in `KeycloakTokenProvider` logs in against the *public* SDK Keycloak client
+(no `client_secret` is ever sent) and keeps the access token fresh. It behaves exactly like the token
+provider of every other ONDEWO client SDK. Supply its configuration under `KEYCLOAK_TOKEN_provideOndewoSipAuthR_CONFIG`
+and register it with `provideOndewoSipAuth(KeycloakTokenProvider)`:
+
+```ts
+import { provideHttpClient, withInterceptors } from "@angular/common/http";
+import {
+  authHttpInterceptor,
+  KEYCLOAK_TOKEN_provideOndewoSipAuthR_CONFIG,
+  KeycloakTokenProvider,
+  KeycloakTokenProviderConfig,
+  provideOndewoSipAuth
+} from "@ondewo/sip-client-angular";
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideHttpClient(withInterceptors([authHttpInterceptor])),
+    {
+      provide: KEYCLOAK_TOKEN_provideOndewoSipAuthR_CONFIG,
+      useValue: {
+        keycloakUrl: "https://keycloak.example.com",
+        realm: "ondewo",
+        clientId: "ondewo-nlu-cai-sdk-public",
+        refreshToken: offlineTokenFromYourSecretStore // or: username + password
+      } satisfies KeycloakTokenProviderConfig
+    },
+    provideOndewoSipAuth(KeycloakTokenProvider)
+  ]
+});
+```
+
+A handed-off Keycloak **offline token** (`refreshToken`) is what a fleet of clients sharing one technical
+user should use: start-up is then one `refresh_token` grant, and a refused token is never answered with a
+password login (Keycloak's brute-force detection counts failed password logins, not refresh grants). A
+`username` + `password` pair performs one `grant_type=password` login with `scope=offline_access` instead;
+it only works for a 2FA-exempt technical user. `offlineToken` is still accepted as a deprecated alias of
+`refreshToken`.
+
+`keycloakUrl`, `realm` and `clientId` are all-or-nothing: all three empty means "no Keycloak" (no login, no
+`authorization` header), any other partial set is rejected. With Keycloak configured, `password` or
+`refreshToken` is mandatory. `tokenExpirationInS` bounds the auto-refresh when the session must not outlive
+a fixed window; `keycloakVerifySsl` is accepted for parity with the other SDKs but cannot change a browser's
+TLS verification. Every string rendering of the provider shows a set secret as `***REDACTED***`.
+
+The refresh runs `REFRESH_SKEW_IN_S` (30 s) before expiry; a failed refresh is retried after a jittered
+backoff (5 s, doubling to 300 s) and never ends the refresh loop. While it fails, `getToken()` keeps serving
+the still-valid token, and only a token that has expired and cannot be refreshed is reported as a
+`KeycloakAuthenticationError`. A request issued while the first login is still in flight waits for it
+instead of going out unauthenticated. One WARNING is logged per failed attempt and one INFO on recovery
+(through the optional `logger`, default the console), never with a credential. Providers with the same
+credentials on the same `HttpClient` share one login. The framework-free core is exported as
+`KeycloakTokenSession` for use outside Angular DI.
+
+Credentials that are only known after bootstrap are supplied with `await tokenProvider.configure(config)`;
+without a config the provider stays idle. `await tokenProvider.whenReady()` waits for the first login (e.g.
+in an `APP_INITIALIZER`), and after the server answered `UNAUTHENTICATED`,
+`await tokenProvider.ensureFreshToken({ force: true })` renews the token (single-flight, honouring a running
+backoff; a refresh never falls back to a password login).
+
+`provideKeycloakTokenProvider(config)` registers the configuration as well, and the background refresh timer
+is armed outside the Angular zone, so it never keeps the application from becoming stable.
+
 ## TLS, mutual TLS and certificates
 
 gRPC encrypts with **TLS**; in this library the transport is **gRPC-web** over the browser's `fetch`/XHR, so TLS

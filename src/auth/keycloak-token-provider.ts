@@ -1,62 +1,81 @@
-import { HttpClient, HttpHeaders } from "@angular/common/http";
-import { Inject, Injectable, InjectionToken, NgZone, OnDestroy, Optional } from "@angular/core";
-import { firstValueFrom } from "rxjs";
+import { HttpClient, HttpErrorResponse, HttpHeaders, HttpResponse } from "@angular/common/http";
+import { inject, Injectable, InjectionToken, NgZone, OnDestroy } from "@angular/core";
+import { catchError, firstValueFrom, map, Observable, of, throwError, timeout } from "rxjs";
+import {
+  acquireKeycloakTokenSession,
+  GLOBAL_KEYCLOAK_SCHEDULER,
+  KeycloakAuthenticationError,
+  KeycloakLogger,
+  KeycloakScheduler,
+  KeycloakTokenHttpResponse,
+  KeycloakTokenRequest,
+  KeycloakTokenSession,
+  KeycloakTokenSessionLease,
+  KeycloakTokenTransport,
+  KeycloakTransportError,
+  redactSecret
+} from "./keycloak-token-session";
 import { TokenProvider, TokenResult } from "./token-provider";
 
-/**
- * Seconds of head-room subtracted from a token's `expires_in` so the background
- * refresh fires *before* the access token actually lapses (covers clock skew and
- * the round-trip to Keycloak). Mirrors the nodejs `REFRESH_SKEW_IN_S` and the
- * python `_EXPIRY_LEEWAY_S` references.
- */
-export const REFRESH_SKEW_IN_S: number = 30;
+export {
+  KeycloakAuthenticationError,
+  MAX_REFRESH_RETRY_EXPONENT,
+  MIN_REFRESH_DELAY_IN_S,
+  REFRESH_RETRY_BASE_DELAY_IN_S,
+  REFRESH_RETRY_MAX_DELAY_IN_S,
+  REFRESH_SKEW_IN_S
+} from "./keycloak-token-session";
+
+/** Options accepted by {@link KeycloakTokenProvider.ensureFreshToken}. */
+export interface EnsureFreshTokenOptions {
+  /**
+   * Renew even when the cached access token still looks valid.
+   *
+   * Set this after the server has rejected a request with `UNAUTHENTICATED`: the
+   * token may have been revoked, or the local clock may be ahead of Keycloak's,
+   * in which case the cached expiry cannot be trusted. A running failure backoff
+   * still applies, so a forced renewal never hammers an unavailable Keycloak.
+   */
+  force?: boolean;
+}
 
 /**
- * Lower bound (in seconds) on the scheduled refresh delay, so a tiny or zero
- * `expires_in` cannot spin a hot refresh loop.
- */
-export const MIN_REFRESH_DELAY_IN_S: number = 1;
-
-/**
- * Configuration the consuming application supplies to {@link KeycloakTokenProvider}.
+ * Runtime configuration for {@link KeycloakTokenProvider}.
  *
- * Provide either a long-lived offline / refresh token (`refreshToken`) — the
- * preferred headless-SDK shape, no password kept in memory — or a
- * `username` + `password` pair for a one-time Resource Owner Password Credentials
- * (ROPC) login with `scope=offline_access`. Exactly one of the two must be given.
+ * Authentication is performed against the *public* SDK Keycloak client (no
+ * `client_secret` is ever sent). Supply **either** a long-lived offline
+ * refresh token (`refreshToken`) **or** a username + password pair for a
+ * one-time Resource-Owner-Password-Credentials (ROPC) login — the technical
+ * user must be 2FA-exempt for the ROPC grant to succeed.
+ *
+ * `keycloakUrl`, `realm` and `clientId` are all-or-nothing: all three empty
+ * means "no Keycloak" (no login, no `authorization` metadata); setting only
+ * some of them is rejected.
  */
 export interface KeycloakTokenProviderConfig {
-  /**
-   * Base Keycloak URL, e.g. `https://auth.example.com/auth` (a trailing slash and
-   * a baked-in `/auth` path are both tolerated).
-   */
-  readonly keycloakUrl: string;
+  /** Base Keycloak URL, e.g. `https://auth.example.com/auth` (trailing slash tolerated). */
+  keycloakUrl: string;
   /** Realm name, e.g. `ondewo-ccai-platform`. */
-  readonly realm: string;
+  realm: string;
+  /** Public SDK client id, e.g. `ondewo-nlu-cai-sdk-public` (no `client_secret`). */
+  clientId: string;
   /**
-   * Public SDK client id, e.g. `ondewo-nlu-cai-sdk-public`. No `client_secret` is
-   * ever sent (the SDK client is public).
+   * Deprecated alias of {@link refreshToken}, used only when `refreshToken` is empty.
+   *
+   * @deprecated use `refreshToken`.
    */
-  readonly clientId: string;
+  offlineToken?: string;
+  /** Technical-user email / username for the ROPC grant (not needed with a refresh token). */
+  username?: string;
+  /** Technical-user password for the ROPC grant. Never sent when a refresh token is configured. */
+  password?: string;
   /**
-   * A long-lived offline / refresh token used to mint access tokens directly
-   * (`grant_type=refresh_token`). Mutually exclusive with `username`/`password`.
+   * Optional cap (seconds) on how long the auto-refresh runs after the
+   * first login. Once it elapses no refresh is sent any more and the access
+   * token is allowed to lapse. Omit to keep refreshing until the offline
+   * session itself expires.
    */
-  readonly refreshToken?: string;
-  /**
-   * Technical-user email/username for a one-time ROPC login. Requires `password`.
-   * Mutually exclusive with `refreshToken`.
-   */
-  readonly username?: string;
-  /** Technical-user password for the ROPC login. Requires `username`. */
-  readonly password?: string;
-  /**
-   * Optional cap (in seconds since login) on how long the background refresh loop
-   * runs. Once it elapses the loop stops and the access token is allowed to lapse
-   * (re-login required). Omit to keep refreshing until the offline session itself
-   * expires.
-   */
-  readonly tokenExpirationInS?: number;
+  tokenExpirationInS?: number;
   /**
    * Whether to verify the Keycloak server's TLS certificate on the
    * token-endpoint call. Defaults to `true` (secure).
@@ -64,167 +83,375 @@ export interface KeycloakTokenProviderConfig {
    * NO-OP IN THIS ANGULAR/BROWSER CLIENT. The token request is made with
    * Angular's `HttpClient` (an XHR/fetch call), and in a browser the TLS
    * handshake is owned by the user agent — there is no `https.Agent`, undici
-   * dispatcher, or `rejectUnauthorized` hook that app code can reach, and
-   * `HttpClient`'s request options expose no certificate-verification slot. The
-   * value is therefore stored on the provider for cross-SDK config parity with
-   * the Python/Node.js clients (where it does disable TLS verification) but has
-   * no effect on the outgoing request here. For a self-signed local Envoy, the
-   * certificate must be trusted at the browser/OS level instead.
+   * dispatcher, or `rejectUnauthorized` hook that app code can reach. The value
+   * is accepted for cross-SDK config parity (it is part of the shared-login key)
+   * but has no effect on the outgoing request here. For a self-signed
+   * Keycloak/Envoy endpoint, trust the certificate at the browser/OS level.
    */
-  readonly keycloakVerifySsl?: boolean;
+  keycloakVerifySsl?: boolean;
+  /**
+   * Optional [0,1] random source for the failure-backoff jitter; defaults to
+   * `Math.random`. Tests inject a constant to make the retry delay exact.
+   */
+  randomFraction?: () => number;
+  /**
+   * Optional log sink for the refresh WARNING / recovery INFO lines; defaults to
+   * the console. No credential ever reaches it.
+   */
+  logger?: KeycloakLogger;
+  /**
+   * A handed-off Keycloak OFFLINE refresh token. When set, start-up is ONE
+   * `refresh_token` grant with it and no password grant is ever sent, not even
+   * as a fallback when the token is refused. Takes precedence over
+   * `username` / `password`.
+   */
+  refreshToken?: string;
 }
 
 /**
- * DI token under which {@link KeycloakTokenProvider} reads its
- * {@link KeycloakTokenProviderConfig}. The consuming application provides a value
- * for it (see {@link provideKeycloakTokenProvider}).
+ * DI token under which the consuming application supplies the
+ * {@link KeycloakTokenProviderConfig} for {@link KeycloakTokenProvider}.
+ *
+ * Example:
+ *
+ * ```ts
+ * providers: [
+ *   {
+ *     provide: KEYCLOAK_TOKEN_PROVIDER_CONFIG,
+ *     useValue: {
+ *       keycloakUrl: "https://auth.example.com/auth",
+ *       realm: "ondewo-ccai-platform",
+ *       clientId: "ondewo-nlu-cai-sdk-public",
+ *       refreshToken: "<offline token>", // or: username + password
+ *     } satisfies KeycloakTokenProviderConfig,
+ *   },
+ *   provideOndewoSipAuth(KeycloakTokenProvider),
+ * ]
+ * ```
  */
 export const KEYCLOAK_TOKEN_PROVIDER_CONFIG: InjectionToken<KeycloakTokenProviderConfig> =
   new InjectionToken<KeycloakTokenProviderConfig>("ONDEWO_SIP_KEYCLOAK_TOKEN_PROVIDER_CONFIG");
 
-/** Error raised on a missing/invalid configuration or any token-endpoint failure. */
-export class KeycloakAuthenticationError extends Error {
-  /**
-   * @param message a human-readable description of the configuration or token failure.
-   */
-  public constructor(message: string) {
-    super(message);
-    this.name = "KeycloakAuthenticationError";
-  }
-}
-
-/** The fields of a Keycloak token-endpoint response this provider consumes. */
-interface KeycloakTokenResponse {
-  /** The short-lived bearer access token. */
-  readonly access_token?: string;
-  /** The (optionally rotated) refresh token; absent if the response carries none. */
-  readonly refresh_token?: string;
-  /** The access-token lifetime in seconds, as reported by Keycloak. */
-  readonly expires_in?: number;
+/** The credentials a valid, Keycloak-configured {@link KeycloakTokenProviderConfig} resolves to. */
+interface ResolvedCredentials {
+  /** Keycloak base URL. */
+  keycloakUrl: string;
+  /** Realm. */
+  realm: string;
+  /** Public client id. */
+  clientId: string;
+  /** Technical user. */
+  username: string;
+  /** Password, possibly empty. */
+  password: string;
+  /** Auto-refresh bound, or `null`. */
+  tokenExpirationInS: number | null;
+  /** TLS verification flag. */
+  verifySsl: boolean;
+  /** Offline refresh token, possibly empty. */
+  refreshToken: string;
 }
 
 /**
- * Concrete, ready-to-use {@link TokenProvider} that performs the Keycloak headless
- * offline-token flow itself, so consumers get background access-token refresh
- * without implementing {@link TokenProvider}.
+ * Validate a configuration before any network I/O.
  *
- * On the first {@link getToken} call it logs in once against the Keycloak token
- * endpoint — either with a supplied offline / refresh token
- * (`grant_type=refresh_token`) or with a `username` + `password` ROPC grant
- * (`grant_type=password`, `scope=offline_access`) — then keeps the access token
- * fresh via a background timer that refreshes shortly *before* expiry (clamped to
- * an optional bounded deadline, mirroring the nodejs `OfflineTokenProvider` and
- * python `KeycloakTokenProvider` references). {@link getToken} returns the current
- * valid access token; the library's interceptors attach it as
- * `Authorization: Bearer <token>`.
+ * @param config the configuration.
+ * @returns the resolved credentials, or `null` when no Keycloak is configured at all.
+ * @throws KeycloakAuthenticationError on a partial Keycloak triple, on neither a password nor a
+ *   refresh token, or on a password grant without a username.
+ */
+function resolveCredentials(config: KeycloakTokenProviderConfig): ResolvedCredentials | null {
+  const keycloakUrl: string = config.keycloakUrl ?? "";
+  const realm: string = config.realm ?? "";
+  const clientId: string = config.clientId ?? "";
+  const configured: number = [keycloakUrl, realm, clientId].filter((value: string): boolean => value.length > 0)
+    .length;
+  if (configured === 0) {
+    return null;
+  }
+  if (configured < 3) {
+    throw new KeycloakAuthenticationError(
+      "The Keycloak fields `keycloakUrl`, `realm`, and `clientId` must be provided together in " +
+        "KeycloakTokenProviderConfig."
+    );
+  }
+  const refreshToken: string = config.refreshToken || config.offlineToken || "";
+  const password: string = config.password ?? "";
+  const username: string = config.username ?? "";
+  if (refreshToken.length === 0 && password.length === 0) {
+    throw new KeycloakAuthenticationError(
+      "Either the field `password` or the field `refreshToken` (refresh_token; deprecated alias " +
+        "`offlineToken`) is mandatory in KeycloakTokenProviderConfig."
+    );
+  }
+  if (refreshToken.length === 0 && username.length === 0) {
+    throw new KeycloakAuthenticationError(
+      "KeycloakTokenProvider requires either an offlineToken or a username + password pair"
+    );
+  }
+  return {
+    keycloakUrl,
+    realm,
+    clientId,
+    username,
+    password,
+    tokenExpirationInS: config.tokenExpirationInS ?? null,
+    verifySsl: config.keycloakVerifySsl ?? true,
+    refreshToken
+  };
+}
+
+/**
+ * Concrete, ready-to-use {@link TokenProvider} that logs in once against the
+ * public Keycloak SDK client and keeps the access token fresh, behaving exactly
+ * like the token provider of every other ONDEWO SDK (see {@link KeycloakTokenSession}):
  *
- * Register it with {@link provideKeycloakTokenProvider}, then point the SDK auth at
- * it:
+ * 1. **Start-up once** — ONE `refresh_token` grant with a configured
+ *    `refreshToken`, or else ONE `grant_type=password` login with
+ *    `scope=offline_access`. A refused refresh token is never answered with a
+ *    password login.
+ * 2. **Refresh ahead of expiry** — a background timer refreshes
+ *    {@link REFRESH_SKEW_IN_S} before the token lapses; a failed refresh is
+ *    retried with a jittered backoff (5 s doubling to 300 s) and never ends the
+ *    loop. The optional `tokenExpirationInS` bounds it.
+ * 3. **Serve the current token** — {@link getToken} answers synchronously while
+ *    the token is comfortably valid; inside the leeway it returns a promise that
+ *    runs one shared refresh, and keeps serving the still-valid token while that
+ *    refresh fails. Only an expired token that cannot be refreshed rejects, with
+ *    a {@link KeycloakAuthenticationError}.
  *
- * ```ts
- * bootstrapApplication(AppComponent, {
- *   providers: [
- *     provideHttpClient(),
- *     provideKeycloakTokenProvider({
- *       keycloakUrl: "https://auth.example.com/auth",
- *       realm: "ondewo-ccai-platform",
- *       clientId: "ondewo-nlu-cai-sdk-public",
- *       refreshToken: "<offline-token>",
- *     }),
- *     provideOndewoSipAuth(KeycloakTokenProvider),
- *     provideHttpClient(withInterceptors([authHttpInterceptor])),
- *   ],
- * });
- * ```
+ * Providers with the same credentials on the same `HttpClient` share one login.
+ *
+ * Register it through `provideOndewoSipAuth` after supplying a
+ * {@link KEYCLOAK_TOKEN_PROVIDER_CONFIG}. The first login is kicked off on
+ * construction; call {@link whenReady} to await it explicitly (e.g. in an
+ * `APP_INITIALIZER`).
  */
 @Injectable({ providedIn: "root" })
 export class KeycloakTokenProvider implements TokenProvider, OnDestroy {
-  /** Pre-computed OIDC token endpoint URL for the configured realm. */
-  private readonly tokenEndpoint: string;
-  /** Public SDK client id sent on every token request (no `client_secret`). */
-  private readonly clientId: string;
-  /** Optional cap (seconds) after which the refresh loop stops; `undefined` means unbounded. */
-  private readonly tokenExpirationInS: number | undefined;
+  /** Angular HTTP client used for the token-endpoint calls (and the scope of the shared login). */
+  private readonly http: HttpClient = inject(HttpClient);
+  /** The Angular zone; the background refresh timer is armed outside it. */
+  private readonly zone: NgZone = inject(NgZone);
+  /**
+   * The timers of the background refresh, armed outside Angular so the recurring timer does not
+   * keep the zone unstable (which would stall `whenStable()`, SSR and hydration) between refreshes.
+   */
+  private readonly scheduler: KeycloakScheduler = {
+    setTimeout: (fn: () => void, delayInMs: number): unknown =>
+      this.zone.runOutsideAngular((): unknown => GLOBAL_KEYCLOAK_SCHEDULER.setTimeout(fn, delayInMs)),
+    clearTimeout: (handle: unknown): void => GLOBAL_KEYCLOAK_SCHEDULER.clearTimeout(handle)
+  };
+  /**
+   * The resolved runtime configuration, or `null` until {@link configure} supplies
+   * one. Injected optionally so an application that only learns its credentials at
+   * runtime (e.g. an embedded widget reading them from its URL) can register the
+   * provider at bootstrap and configure it later.
+   */
+  private config: KeycloakTokenProviderConfig | null = inject(KEYCLOAK_TOKEN_PROVIDER_CONFIG, {
+    optional: true
+  });
+
   /**
    * Whether TLS-certificate verification is requested for the token-endpoint
-   * call. Defaults to `true`. Stored for cross-SDK config parity only — it is a
-   * NO-OP in this browser client (the browser owns the TLS handshake), so the
-   * outgoing {@link postTokenRequest} call is unaffected by its value. See
-   * {@link KeycloakTokenProviderConfig.keycloakVerifySsl}.
+   * call. Defaults to `true`. A NO-OP in this browser client (the browser owns the
+   * TLS handshake). See {@link KeycloakTokenProviderConfig.keycloakVerifySsl}.
    */
-  private readonly verifySsl: boolean;
-  /** The grant parameters for the one-time login, derived from the config. */
-  private readonly loginRequest: Record<string, string>;
+  private verifySsl: boolean = true;
 
-  /** The current access token, or `null` before the first login / after the bounded loop lapses. */
-  private accessToken: string | null = null;
-  /** The current refresh token, or `null` before any login completes. */
-  private refreshToken: string | null = null;
-  /** Handle of the armed refresh timer, or `null` when no refresh is scheduled. */
-  private timer: ReturnType<typeof setTimeout> | null = null;
-  /** Whether {@link ngOnDestroy} has run; suppresses any further (re-)scheduling. */
-  private stopped: boolean = false;
-  /** Absolute epoch-ms deadline for the bounded loop, or `null` when unbounded. */
-  private deadlineInMs: number | null = null;
-  /** The in-flight (or settled) one-time login promise; ensures login happens exactly once. */
-  private loginPromise: Promise<void> | null = null;
+  /** The started session, or `null` before the first login / without Keycloak. */
+  private session: KeycloakTokenSession | null = null;
+  /** This provider's hold on the shared session, released on destroy / re-configure. */
+  private lease: KeycloakTokenSessionLease | null = null;
+  /** The start-up in flight, or `null`. */
+  private starting: Promise<void> | null = null;
+  /** Bumped by every start-up, so a superseded start-up drops its session. */
+  private generation: number = 0;
+  /** Whether {@link ngOnDestroy} has run. */
+  private destroyed: boolean = false;
 
   /**
-   * @param http the Angular {@link HttpClient} used for the token-endpoint calls.
-   * @param zone the {@link NgZone}; the background timer is armed outside Angular so it
-   *   does not keep change detection / zone stability churning between refreshes.
-   * @param config the {@link KeycloakTokenProviderConfig}, injected under
-   *   {@link KEYCLOAK_TOKEN_PROVIDER_CONFIG}.
+   * Promise settled by the *first* login attempt — the one started by the constructor when a
+   * config was injected, otherwise the one started by the first {@link configure} call. It
+   * resolves when that login succeeds and rejects when it fails; later attempts leave it as-is
+   * (a settled promise cannot be re-settled), so callers tracking a re-{@link configure} must
+   * await the promise `configure()` returns rather than {@link whenReady}.
    */
-  public constructor(
-    private readonly http: HttpClient,
-    private readonly zone: NgZone,
-    @Optional() @Inject(KEYCLOAK_TOKEN_PROVIDER_CONFIG) config: KeycloakTokenProviderConfig | null
-  ) {
-    if (config === null) {
-      throw new KeycloakAuthenticationError(
-        "KeycloakTokenProvider requires a KEYCLOAK_TOKEN_PROVIDER_CONFIG value; " +
-          "register it with provideKeycloakTokenProvider({ ... })"
+  private readonly ready: Promise<void>;
+  /** Settles {@link ready} on the first successful login. */
+  private resolveReady!: () => void;
+  /** Settles {@link ready} when the first login fails. */
+  private rejectReady!: (reason: unknown) => void;
+
+  /**
+   * The token-endpoint exchange over Angular's `HttpClient`: the raw body is kept as text so the
+   * session can judge the status and parse the JSON itself; a status-0 answer, a timeout or any
+   * other failure to get an answer becomes a {@link KeycloakTransportError}.
+   *
+   * @param request the token request.
+   * @returns the HTTP answer.
+   */
+  private readonly transport: KeycloakTokenTransport = (
+    request: KeycloakTokenRequest
+  ): Promise<KeycloakTokenHttpResponse> => {
+    const headers: HttpHeaders = new HttpHeaders({
+      "Content-Type": "application/x-www-form-urlencoded",
+      Accept: "application/json"
+    });
+    const response$: Observable<KeycloakTokenHttpResponse> = this.http
+      .post(request.url, new URLSearchParams(request.form).toString(), {
+        headers,
+        observe: "response",
+        responseType: "text"
+      })
+      .pipe(
+        timeout({ first: request.timeoutInS * 1000 }),
+        map(
+          (response: HttpResponse<string>): KeycloakTokenHttpResponse => ({
+            status: response.status,
+            body: response.body ?? ""
+          })
+        ),
+        catchError((error: unknown): Observable<KeycloakTokenHttpResponse> => {
+          if (error instanceof HttpErrorResponse && error.status !== 0) {
+            let body: string = "";
+            if (typeof error.error === "string") {
+              body = error.error;
+            }
+            return of({ status: error.status, body });
+          }
+          return throwError(
+            (): KeycloakTransportError =>
+              new KeycloakTransportError("the token endpoint gave no HTTP answer", { cause: error })
+          );
+        })
       );
+    return firstValueFrom(response$);
+  };
+
+  /**
+   * Build the provider and kick off the first login in the background.
+   *
+   * No network call is awaited here; {@link getToken} returns `null` until the
+   * login resolves. Await {@link whenReady} to block until the first token is
+   * available.
+   */
+  public constructor() {
+    this.ready = new Promise<void>((resolve: () => void, reject: (reason: unknown) => void): void => {
+      this.resolveReady = resolve;
+      this.rejectReady = reject;
+    });
+    // Nothing is obliged to call whenReady(), so mark `ready` as observed here: a rejected login
+    // that no one awaits would otherwise surface as an unhandled promise rejection (a console
+    // error in the browser, a process warning under node). whenReady() callers still see it.
+    void this.ready.catch((): void => undefined);
+    if (this.config === null) {
+      // No config at construction: stay idle until configure() supplies credentials.
+      return;
     }
-    this.loginRequest = this.validateAndBuildLoginRequest(config);
-    this.tokenEndpoint = KeycloakTokenProvider.buildTokenEndpoint(config.keycloakUrl, config.realm);
-    this.clientId = config.clientId;
-    this.tokenExpirationInS = config.tokenExpirationInS;
-    // Stored for cross-SDK config parity; a no-op on the browser transport (see field doc).
-    this.verifySsl = config.keycloakVerifySsl ?? true;
-    if (config.refreshToken !== undefined) {
-      this.refreshToken = config.refreshToken;
-    }
+    void this.start(this.config).then(
+      (): void => this.resolveReady(),
+      (error: unknown): void => this.rejectReady(error)
+    );
   }
 
   /**
-   * Return the current access token, logging in on the first call.
+   * Supply (or replace) the runtime configuration and log in with it.
    *
-   * The first invocation returns a `Promise` that resolves once the one-time login
-   * has completed and the background refresh is armed. Subsequent invocations
-   * return the synchronously-held current access token (or `null` if the bounded
-   * loop has lapsed), so interceptors pay no async cost on the hot path.
+   * This is the entry point for credentials that are only known after the
+   * application has bootstrapped — an embedded widget that reads a technical
+   * user and secret from its own URL, for example. The previous login is
+   * released (and stopped when nothing else shares it) before the new one runs,
+   * so a provider can be re-pointed at a different technical user without being
+   * re-created.
    *
-   * @returns the current access token as a {@link TokenResult}.
+   * When this is the provider's first login attempt it also settles {@link whenReady}; a later
+   * re-configure does not, so track those through the promise returned here.
+   *
+   * @param config the configuration to adopt, replacing any earlier one.
+   * @returns a promise that resolves once the login with `config` has completed.
+   * @throws KeycloakAuthenticationError when the configuration is invalid or the
+   *   login fails (the provider is left unauthenticated; {@link getToken} returns `null`).
+   */
+  public async configure(config: KeycloakTokenProviderConfig): Promise<void> {
+    this.destroyed = false;
+    try {
+      await this.start(config);
+    } catch (error: unknown) {
+      // A provider constructed without a config has its first login here, so `ready` is still
+      // pending; reject it rather than leaving every whenReady() awaiter hanging forever.
+      this.rejectReady(error);
+      throw error;
+    }
+    this.resolveReady();
+  }
+
+  /**
+   * Return an access token that is safe to send right now, refreshing first when
+   * the cached one is within {@link REFRESH_SKEW_IN_S} of lapsing.
+   *
+   * Concurrent calls share a single refresh, so a burst of requests arriving on
+   * an expiring token issues one grant rather than one per request. When the
+   * provider holds no session yet (the first login failed), the start-up is run
+   * again — with the refresh token when one is configured.
+   *
+   * @param options renewal options; `force` renews even when the cached token
+   *   still looks valid.
+   * @returns the usable access token, or `null` when the provider has no
+   *   Keycloak config (nothing to renew with).
+   * @throws KeycloakAuthenticationError when the token has expired and cannot be
+   *   refreshed, or the repeated start-up fails.
+   */
+  public async ensureFreshToken(options: EnsureFreshTokenOptions = {}): Promise<string | null> {
+    if (this.config === null) {
+      return null;
+    }
+    if (this.session === null) {
+      await (this.starting ?? this.start(this.config));
+    }
+    if (this.session === null) {
+      return null;
+    }
+    return this.session.getAccessToken({ force: options.force ?? false });
+  }
+
+  /**
+   * Return the current access token for the auth interceptors.
+   *
+   * @returns the access token synchronously while it is comfortably valid; a
+   *   promise running the shared refresh when it is inside the leeway (rejecting
+   *   with a {@link KeycloakAuthenticationError} only when the token has expired
+   *   and cannot be refreshed); while the first login is still in flight, a
+   *   promise that waits for it and yields its token (`null` when it fails), so
+   *   a request issued right after bootstrap is not sent unauthenticated; `null`
+   *   without a Keycloak config or after a failed first login.
    */
   public getToken(): TokenResult {
-    if (this.loginPromise === null) {
-      this.loginPromise = this.bootstrap();
+    if (this.session === null) {
+      if (this.starting === null) {
+        return null;
+      }
+      return this.starting.then(
+        (): Promise<string> | null => {
+          if (this.session === null) {
+            return null;
+          }
+          return this.session.getAccessToken();
+        },
+        (): null => null
+      );
     }
-    if (this.accessToken !== null) {
-      return this.accessToken;
+    const token: string | null = this.session.peekAccessToken();
+    if (token !== null) {
+      return token;
     }
-    return this.loginPromise.then((): string | null => this.accessToken);
+    return this.session.getAccessToken();
   }
 
   /**
    * The resolved TLS-verification setting from
    * {@link KeycloakTokenProviderConfig.keycloakVerifySsl} (defaults to `true`).
-   *
-   * Exposed for cross-SDK config parity and introspection only. It is a NO-OP in
-   * this browser client — the browser owns the TLS handshake, so the value never
-   * reaches {@link postTokenRequest} and does not change the outgoing request.
+   * A NO-OP in this browser client.
    *
    * @returns `true` when TLS verification is requested (the default), `false`
    *   when the config explicitly opted out (still inert here).
@@ -233,218 +460,107 @@ export class KeycloakTokenProvider implements TokenProvider, OnDestroy {
     return this.verifySsl;
   }
 
-  /** Stop the background refresh loop when the provider is torn down. Idempotent. */
+  /**
+   * Await the first login so callers can guarantee a token is present before
+   * issuing requests (e.g. from an `APP_INITIALIZER`).
+   *
+   * @returns a promise that resolves once the first access token is stored, or
+   *   rejects with the {@link KeycloakAuthenticationError} from a failed login.
+   */
+  public whenReady(): Promise<void> {
+    return this.ready;
+  }
+
+  /**
+   * Release this provider's hold on the shared login; the background refresh stops once nothing
+   * else shares it. Invoked automatically when the root injector is destroyed. The token stays
+   * readable (and is still refreshed on demand) afterwards.
+   */
   public ngOnDestroy(): void {
-    this.stopped = true;
-    if (this.timer !== null) {
-      clearTimeout(this.timer);
-      this.timer = null;
-    }
+    this.destroyed = true;
+    this.releaseLease();
   }
 
-  /**
-   * Perform the one-time login (offline-token or ROPC) and arm the first refresh.
-   *
-   * @returns a promise that resolves once the first token is stored and the refresh is armed.
-   * @throws {@link KeycloakAuthenticationError} if the token endpoint fails or returns no
-   *   `access_token` / `refresh_token`.
-   */
-  private async bootstrap(): Promise<void> {
-    const response: KeycloakTokenResponse = await this.postTokenRequest(this.loginRequest);
-    this.storeTokens(response);
-    if (this.refreshToken === null) {
-      throw new KeycloakAuthenticationError(
-        "Keycloak token response did not contain a refresh_token; the SDK client must have " +
-          "directAccessGrants + the offline_access scope (e.g. ondewo-nlu-cai-sdk-public)"
-      );
+  /** @returns the configuration with every non-empty secret rendered as `***REDACTED***`. */
+  public toJSON(): Record<string, unknown> {
+    if (this.config === null) {
+      return {};
     }
-    if (this.tokenExpirationInS !== undefined) {
-      this.deadlineInMs = Date.now() + (this.tokenExpirationInS * 1000);
-    }
-    this.scheduleRefresh(response.expires_in);
-  }
-
-  /**
-   * Exchange the refresh token for a fresh access token and re-arm the next refresh.
-   *
-   * Stops the loop (instead of refreshing) once the bounded deadline has elapsed,
-   * letting the access token lapse. If the provider was torn down while this refresh's
-   * request was in flight, {@link scheduleRefresh} declines to arm the next timer.
-   *
-   * @returns a promise that resolves once the token is refreshed and the next refresh is armed.
-   * @throws {@link KeycloakAuthenticationError} if the refresh call fails or returns no `access_token`.
-   */
-  private async refresh(): Promise<void> {
-    if (this.deadlineInMs !== null && Date.now() >= this.deadlineInMs) {
-      this.ngOnDestroy();
-      return;
-    }
-    const response: KeycloakTokenResponse = await this.postTokenRequest({
-      grant_type: "refresh_token",
-      client_id: this.clientId,
-      // refreshToken is non-null here (bootstrap stored it before arming any refresh), but TS keeps
-      // the field's `string | null` type across the async boundary, so the assertion is required.
-      /* eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- required under the build tsconfig */
-      refresh_token: this.refreshToken as string
-    });
-    this.storeTokens(response);
-    this.scheduleRefresh(response.expires_in);
-  }
-
-  /**
-   * Arm a single timer for the next refresh, clamped to the bounded deadline.
-   *
-   * The delay is `expiresInRaw` minus {@link REFRESH_SKEW_IN_S}, floored at
-   * {@link MIN_REFRESH_DELAY_IN_S}, then clamped to the time remaining before the
-   * deadline. Stops silently once `tokenExpirationInS` has elapsed.
-   *
-   * @param expiresInRaw the `expires_in` (seconds) from the latest token response; a missing
-   *   or non-positive value falls back to {@link MIN_REFRESH_DELAY_IN_S}.
-   */
-  private scheduleRefresh(expiresInRaw: number | undefined): void {
-    if (this.stopped) {
-      return;
-    }
-    const expiresInS: number =
-      typeof expiresInRaw === "number" && expiresInRaw > 0 ? expiresInRaw : MIN_REFRESH_DELAY_IN_S;
-    let delayInS: number = Math.max(expiresInS - REFRESH_SKEW_IN_S, MIN_REFRESH_DELAY_IN_S);
-
-    if (this.deadlineInMs !== null) {
-      const remainingInMs: number = this.deadlineInMs - Date.now();
-      if (remainingInMs <= 0) {
-        this.ngOnDestroy();
-        return;
-      }
-      delayInS = Math.min(delayInS, remainingInMs / 1000);
-    }
-
-    // Arm outside Angular so the recurring timer does not keep the zone unstable.
-    this.zone.runOutsideAngular((): void => {
-      this.timer = setTimeout((): void => {
-        void this.refresh();
-      }, delayInS * 1000);
-    });
-  }
-
-  /**
-   * POST a form-encoded body to the token endpoint and return the parsed JSON.
-   *
-   * @param params the form fields to URL-encode (grant type, client id, credentials).
-   * @returns the parsed {@link KeycloakTokenResponse}.
-   * @throws {@link KeycloakAuthenticationError} on a transport error.
-   */
-  private async postTokenRequest(params: Record<string, string>): Promise<KeycloakTokenResponse> {
-    const body: string = new URLSearchParams(params).toString();
-    const headers: HttpHeaders = new HttpHeaders({
-      "Content-Type": "application/x-www-form-urlencoded",
-      Accept: "application/json"
-    });
-    try {
-      return await firstValueFrom(
-        this.http.post<KeycloakTokenResponse>(this.tokenEndpoint, body, { headers })
-      );
-    } catch (caughtError: unknown) {
-      throw new KeycloakAuthenticationError(
-        `Keycloak token endpoint request failed: ${KeycloakTokenProvider.describeError(caughtError)}`
-      );
-    }
-  }
-
-  /**
-   * Store the access token (and any rotated refresh token) from a token response.
-   *
-   * Keycloak may omit the refresh token on a same-token refresh; the previous one is
-   * kept in that case so it is never blanked out.
-   *
-   * @param response the parsed token-endpoint response.
-   * @throws {@link KeycloakAuthenticationError} if the response carries no `access_token`.
-   */
-  private storeTokens(response: KeycloakTokenResponse): void {
-    if (typeof response.access_token !== "string" || response.access_token.length === 0) {
-      throw new KeycloakAuthenticationError("Keycloak token response did not contain an access_token");
-    }
-    this.accessToken = response.access_token;
-    if (typeof response.refresh_token === "string" && response.refresh_token.length > 0) {
-      this.refreshToken = response.refresh_token;
-    }
-  }
-
-  /**
-   * Validate the config and build the one-time login grant parameters in a single pass.
-   *
-   * Validating and building together lets the credential checks narrow the optional
-   * `username` / `password` fields to `string` for the request shape, so no type
-   * assertion or unreachable guard is needed.
-   *
-   * @param config the {@link KeycloakTokenProviderConfig} to validate.
-   * @returns the form parameters for the offline-token (`grant_type=refresh_token`) or
-   *   ROPC (`grant_type=password`) login.
-   * @throws {@link KeycloakAuthenticationError} on a missing base field or an invalid
-   *   credential combination (neither, or both, credential shapes supplied).
-   */
-  private validateAndBuildLoginRequest(config: KeycloakTokenProviderConfig): Record<string, string> {
-    for (const key of ["keycloakUrl", "realm", "clientId"] as const) {
-      if (typeof config[key] !== "string" || config[key].length === 0) {
-        throw new KeycloakAuthenticationError(
-          `KeycloakTokenProviderConfig.${key} is required and must be a non-empty string`
-        );
-      }
-    }
-    const refreshToken: string | undefined = config.refreshToken;
-    const username: string | undefined = config.username;
-    const password: string | undefined = config.password;
-    const hasRefreshToken: boolean = typeof refreshToken === "string" && refreshToken.length > 0;
-    const hasCredentials: boolean =
-      typeof username === "string" && username.length > 0 && typeof password === "string" && password.length > 0;
-    if (hasRefreshToken === hasCredentials) {
-      throw new KeycloakAuthenticationError(
-        "KeycloakTokenProviderConfig requires exactly one of: a non-empty refreshToken, " +
-          "or a non-empty username + password pair"
-      );
-    }
-
-    if (refreshToken !== undefined && refreshToken.length > 0) {
-      return {
-        grant_type: "refresh_token",
-        client_id: config.clientId,
-        refresh_token: refreshToken
-      };
-    }
-    // hasCredentials === !hasRefreshToken here guarantees both are non-empty strings, but TS does
-    // not propagate that from the boolean above; the assertions narrow them for the request shape.
     return {
-      grant_type: "password",
-      client_id: config.clientId,
-      /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion -- required under the build tsconfig */
-      username: username as string,
-      password: password as string,
-      /* eslint-enable @typescript-eslint/no-unnecessary-type-assertion */
-      scope: "offline_access"
+      ...this.config,
+      password: redactSecret(this.config.password),
+      offlineToken: redactSecret(this.config.offlineToken),
+      refreshToken: redactSecret(this.config.refreshToken)
     };
   }
 
-  /**
-   * Build the OIDC token endpoint URL for a realm, tolerating a trailing slash.
-   *
-   * @param keycloakUrl the base Keycloak URL (trailing slashes are stripped).
-   * @param realm the realm name; URL-encoded into the path.
-   * @returns the fully-qualified `.../protocol/openid-connect/token` endpoint URL.
-   */
-  private static buildTokenEndpoint(keycloakUrl: string, realm: string): string {
-    const base: string = keycloakUrl.replace(/\/+$/, "");
-    return `${base}/realms/${encodeURIComponent(realm)}/protocol/openid-connect/token`;
+  /** @returns a redacted rendering of the configuration. */
+  public toString(): string {
+    return `KeycloakTokenProvider(${JSON.stringify(this.toJSON())})`;
+  }
+
+  /** Give the shared session back, if held. */
+  private releaseLease(): void {
+    if (this.lease !== null) {
+      this.lease.release();
+      this.lease = null;
+    }
   }
 
   /**
-   * Render an arbitrary thrown value into a short message for error wrapping.
+   * Adopt `config`, drop the previous session and start (or join) the session of `config`.
    *
-   * @param caughtError the value thrown by the failing token call.
-   * @returns the error's `message` when it is an `Error`, otherwise its string form.
+   * @param config the configuration to adopt.
+   * @returns a promise that resolves once the session is started (immediately without Keycloak).
    */
-  private static describeError(caughtError: unknown): string {
-    if (caughtError instanceof Error) {
-      return caughtError.message;
+  private start(config: KeycloakTokenProviderConfig): Promise<void> {
+    this.generation += 1;
+    const generation: number = this.generation;
+    this.releaseLease();
+    this.session = null;
+    this.config = config;
+    this.verifySsl = config.keycloakVerifySsl ?? true;
+    const starting: Promise<void> = this.startSession(config, generation).finally((): void => {
+      if (this.starting === starting) {
+        this.starting = null;
+      }
+    });
+    this.starting = starting;
+    return starting;
+  }
+
+  /**
+   * Validate `config` and hold the shared session of its credentials.
+   *
+   * @param config the configuration.
+   * @param generation the start-up generation this call belongs to.
+   * @returns a promise that resolves once the session is held (or no Keycloak is configured).
+   */
+  private async startSession(config: KeycloakTokenProviderConfig, generation: number): Promise<void> {
+    const credentials: ResolvedCredentials | null = resolveCredentials(config);
+    if (credentials === null) {
+      return;
     }
-    return typeof caughtError === "string" ? caughtError : JSON.stringify(caughtError);
+    const lease: KeycloakTokenSessionLease = await acquireKeycloakTokenSession(
+      {
+        ...credentials,
+        transport: this.transport,
+        randomFn: config.randomFraction,
+        logger: config.logger,
+        scheduler: this.scheduler
+      },
+      this.http
+    );
+    if (generation !== this.generation) {
+      // configure() ran again meanwhile: this login is superseded.
+      lease.release();
+      return;
+    }
+    this.session = lease.session;
+    if (this.destroyed) {
+      lease.release();
+      return;
+    }
+    this.lease = lease;
   }
 }
